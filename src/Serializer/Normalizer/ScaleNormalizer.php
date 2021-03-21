@@ -4,7 +4,7 @@
 namespace App\Serializer\Normalizer;
 
 
-use App\Structures\Pitch;
+use App\Structures\Scale;
 use JetBrains\PhpStorm\ArrayShape;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Exception\CircularReferenceException;
@@ -12,22 +12,24 @@ use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Exception\InvalidArgumentException;
 use Symfony\Component\Serializer\Exception\LogicException;
 
-class PitchNormalizer implements NormalizerInterface
+
+class ScaleNormalizer implements NormalizerInterface
 {
     /**
-     * @param Pitch $object
+     * @param Scale $object
      * @param null $format
      * @param array $context
      * @return array
      */
-    #[ArrayShape(['name' => "string", 'accidental' => "string", 'octave' => "int"])]
     public function normalize(mixed $object, $format = null, array $context = []): array
     {
-        return [
-            'name' => $object->getName(),
-            'accidental' => $object->getAccidental(),
-            'octave' => $object->getOctave()
-        ];
+        $return = [];
+        $i = 0;
+        foreach ($object->getPitches() as $pitch) {
+            $return[$i] = (new PitchNormalizer)->normalize($pitch, $format, $context);
+            $i++;
+        }
+        return $return;
     }
 
     /**
@@ -37,6 +39,6 @@ class PitchNormalizer implements NormalizerInterface
      */
     public function supportsNormalization(mixed $data, $format = null): bool
     {
-        return $data instanceof Pitch;
+        return $data instanceof Scale;
     }
 }

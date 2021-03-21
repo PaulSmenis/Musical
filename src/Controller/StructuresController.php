@@ -2,17 +2,15 @@
 
 namespace App\Controller;
 
-use App\Serializer\Normalizer\PitchNormalizer;
 use App\Structures\Pitch;
-use Swagger\Serializer;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Structures\Scale;
+use Exception;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use App\Serializer\Normalizer;
 
 /**
  * @Route("/api/structures")
@@ -45,9 +43,18 @@ class StructuresController extends AbstractController
 
     /**
      * @Route("/scale", methods={"GET"})
+     * @param Request $request
+     * @return Response
+     * @throws Exception
      */
-    public function scale(): Response
+    public function scale(Request $request): Response
     {
-        return $this->json(new Pitch);
+        $a = new Scale(
+            new Pitch($request->get('tonic'), $request->get('accidental'), $request->get('octave')),
+            'zhopa',
+            '1'
+        );
+
+        return $this->json($a);
     }
 }
