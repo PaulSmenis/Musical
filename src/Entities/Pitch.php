@@ -7,7 +7,7 @@ use Symfony\Component\Config\Definition\Exception\Exception;
 class Pitch
 {
     public const NAMES = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-    public const ACCIDENTALS = ['#', 'b', 'natural'];
+    public const ACCIDENTALS = ['###', '##', '#', 'bbb', 'bb', 'b', 'natural'];
 
     /**
      * @var string $name
