@@ -1,0 +1,4 @@
+/var
+/vendor
+/docker-compose
+/.env
