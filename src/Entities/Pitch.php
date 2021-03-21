@@ -20,21 +20,23 @@ class Pitch
     private string $accidental;
 
     /**
-     * @var int $octave_spn
+     * @var int $octave
      */
-    private int $octave_spn;
+    private int $octave;
 
     /**
      * Pitch constructor.
+     *
+     * If some value is not passed, random is used.
      * @param string|null $name
      * @param string|null $accidental
-     * @param int|null $octave_spn
+     * @param int|null $octave
      * @throws \Exception
      */
     public function __construct(
-        ?string $name = null,
-        ?string $accidental = null,
-        ?int $octave_spn = null
+        string $name = null,
+        string $accidental = null,
+        int $octave = null
     )
     {
         if (!$name) {
@@ -49,10 +51,10 @@ class Pitch
             $this->accidental = $accidental;
         }
 
-        if (!$octave_spn) {
-            $this->octave_spn = random_int(0, 8);
+        if (!$octave) {
+            $this->octave = random_int(0, 8);
         } else {
-            $this->octave_spn = $octave_spn;
+            $this->octave = $octave;
         }
     }
 
@@ -99,18 +101,18 @@ class Pitch
     /**
      * @return int
      */
-    public function getOctaveSpn(): int
+    public function getOctave(): int
     {
-        return $this->octave_spn;
+        return $this->octave;
     }
 
     /**
-     * @param int $octave_spn
+     * @param int $octave
      */
-    public function setOctaveSpn(int $octave_spn): void
+    public function setOctave(int $octave): void
     {
-        if ($octave_spn >= 0 && $octave_spn <= 8) {
-            $this->octave_spn = $octave_spn;
+        if ($octave >= 0 && $octave <= 8) {
+            $this->octave = $octave;
         } else {
             throw new Exception('Octave SPN is not an appropriate value');
         }

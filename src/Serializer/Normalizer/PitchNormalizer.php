@@ -26,7 +26,7 @@ class PitchNormalizer implements NormalizerInterface
         return [
             'name' => $object->getName(),
             'accidental' => $object->getAccidental(),
-            'octave' => $object->getOctaveSpn()
+            'octave' => $object->getOctave()
         ];
     }
 
@@ -39,13 +39,5 @@ class PitchNormalizer implements NormalizerInterface
     public function supportsNormalization(mixed $data, $format = null): bool
     {
         return $data instanceof Pitch;
-    }
-
-    /**
-     * @return bool
-     */
-    public function hasCacheableSupportsMethod(): bool
-    {
-        return true;
     }
 }
