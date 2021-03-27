@@ -131,14 +131,6 @@ class Pitch
     }
 
     /**
-     * @return string
-     */
-    #[Pure] public function getPitchClass(): string
-    {
-        return $this->getName() . $this->getAccidental();
-    }
-
-    /**
      * @param string $direction
      * @param int $times
      */
