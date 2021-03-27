@@ -63,6 +63,14 @@ class Pitch
     /**
      * @return string
      */
+    #[Pure] public function __toString(): string
+    {
+        return $this->getName() . $this->getAccidental() . $this->getOctave();
+    }
+
+    /**
+     * @return string
+     */
     public function getName(): string
     {
         return $this->name;
@@ -131,48 +139,36 @@ class Pitch
      * @param string $direction
      * @param int $times
      */
-    public function moveADiatonicHalfstep(string $direction, int $times = 1): void
+    public function moveHalfstep(string $direction): void
     {
         $name           = $this->getName();
         $acc            = $this->getAccidental();
-        $up_no_acc      = in_array($name, ['B', 'E']);
-        $down_no_acc    = in_array($name, ['C', 'F']);
 
         $this->validateDirection($direction);
 
-        if (
-            !in_array($acc, ['#', 'b', 'natural'])
-            || $acc === '#' && $up_no_acc
-            || $acc === 'b' && $down_no_acc) {
-            throw new Exception('Pass an appropriate value');
-        } else {
-            $raise = ($direction === 'raise');
-            $c = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-            $i = array_search($name, $c) + 1 - (($raise) ? 0 : 1);
-            while ($times) {
-                if ($i < 0) {
-                    $i += 7;
-                    $this->moveOctave('lower');
-                } else if ($i > 6) {
-                    $i -= 7;
-                    $this->moveOctave('raise');
-                }
-                $name = $c[$i];
-
-                if ($acc === 'natural') {
-                    if ($raise && $up_no_acc || !$raise && $down_no_acc) {
-                        $this->setName($name);
-                    } else {
-                        $this->setAccidental($raise ? '#' : 'b');
-                    }
+        $setAcc = function($dir, $sign) use ($direction, $acc) {
+            if ($direction === $dir) {
+                if (mb_strlen($acc) > 2) {
+                    throw new Exception('Accidental exceeds range of triples');
                 } else {
-                    if ($acc === '#' ? $raise : !$raise) {
-                        $this->setName($name);
-                    }
-                    $this->setAccidental('natural');
+                    $this->setAccidental($acc . $sign);
                 }
-                $times--;
+            } else {
+                if (mb_strlen($acc) === 1) {
+                    $this->setAccidental('natural');
+                } else {
+                    $this->setAccidental(substr($acc, 0, -1));
+                }
             }
+        };
+
+        if ($acc[-1] === '#') {
+            $setAcc('raise', '#');
+        } else if ($acc[-1] === 'b') {
+
+            $setAcc('lower', 'b');
+        } else {
+            $this->setAccidental($direction === 'lower' ? 'b' : '#');
         }
     }
 
@@ -190,15 +186,6 @@ class Pitch
         } else {
             $this->setOctave($octave + 1 - ($raise ? 0 : 2));
         }
-    }
-
-    /**
-     * @param string $direction
-     */
-    public function moveAccidental(string $direction)
-    {
-        $raise = ($direction === 'raise');
-        $this->validateDirection($direction);
     }
 
     /**

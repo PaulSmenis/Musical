@@ -85,17 +85,12 @@ class Scale
 
         $this->setPitches($scale);
         while ($start !== $finish) {
-            var_dump($map[$start]); // TODO Пофиксить баг
-            if ($map[$start]) {
-                $scale[$map[$start] - 1]->moveADiatonicHalfstep($less ? 'lower' : 'raise');
-            } else {
-                var_dump('xxx');
-            }
+            $scale[$map[$start] - 1]->moveHalfstep($less ? 'lower' : 'raise');
             $less ? ++$start : --$start;
         }
         if ($acc !== 'natural') {
             foreach($scale as $p) {
-                $p->moveADiatonicHalfstep($acc === '#' ? 'raise' : 'lower');
+                $p->moveHalfstep($acc === '#' ? 'raise' : 'lower');
             }
         }
         $this->setPitches($scale);
