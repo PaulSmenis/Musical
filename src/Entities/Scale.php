@@ -45,7 +45,7 @@ class Scale
         $pitch_name     = $pitch->getName();
         $acc            = $pitch->getAccidental();
         $start          = array_search($pitch_name, Pitch::NAMES);
-
+        // TODO валидировать передачу корректной структуры в формулу
         $process_formulaic = function ($scale_degree_formulaic) use ($modes) {
             if (mb_strlen($scale_degree_formulaic) > 1) {
                 $scale_degree = $scale_degree_formulaic[-1];
@@ -142,9 +142,13 @@ class Scale
         if (is_string($scale_formula)) {
             if (in_array($scale_formula, array_keys(self::COMMON_SCALES))) {
                 $scale_formula = self::COMMON_SCALES[$scale_formula];
+            } elseif (1 === 3) {
+                // TODO: Добавить поддержку кастомных формул
             } else {
                 throw new Exception('Passed scale name is not supported');
             }
+        } else {
+            throw new Exception('Passed scale name is not supported');
         }
         $apply_formula = function($scale, $formula) use ($process_formulaic, $shift_pitch) {
             $output_pitches = [];
