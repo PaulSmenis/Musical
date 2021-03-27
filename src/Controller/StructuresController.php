@@ -2,8 +2,8 @@
 
 namespace App\Controller;
 
-use App\Structures\Pitch;
-use App\Structures\Scale;
+use App\Entities\Pitch;
+use App\Entities\Scale;
 use Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -50,9 +50,13 @@ class StructuresController extends AbstractController
     public function scale(Request $request): Response
     {
         $a = new Scale(
-            new Pitch($request->get('tonic'), $request->get('accidental'), $request->get('octave')),
-            'zhopa',
-            '1'
+            new Pitch(
+                $request->get('tonic'),
+                $request->get('accidental'),
+                $request->get('octave')
+            ),
+            $request->get('formula'),
+            $request->get('degree')
         );
 
         return $this->json($a);

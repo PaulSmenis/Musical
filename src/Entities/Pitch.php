@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\Structures;
+namespace App\Entities;
 use JetBrains\PhpStorm\Pure;
 use Symfony\Component\Config\Definition\Exception\Exception;
 
@@ -65,7 +65,11 @@ class Pitch
      */
     #[Pure] public function __toString(): string
     {
-        return $this->getName() . $this->getAccidental() . $this->getOctave();
+        $acc = $this->getAccidental();
+        return
+            $this->getName() .
+            (($acc === 'natural') ? '' : $acc) .
+            $this->getOctave();
     }
 
     /**
@@ -135,16 +139,13 @@ class Pitch
     }
 
     /**
-     * Expecting sane values in a musical sense (F instead of E#, A instead of G##, etc.)
      * @param string $direction
      * @param int $times
      */
     public function moveHalfstep(string $direction): void
     {
-        $name           = $this->getName();
-        $acc            = $this->getAccidental();
-
         $this->validateDirection($direction);
+        $acc = $this->getAccidental();
 
         $setAcc = function($dir, $sign) use ($direction, $acc) {
             if ($direction === $dir) {
@@ -165,7 +166,6 @@ class Pitch
         if ($acc[-1] === '#') {
             $setAcc('raise', '#');
         } else if ($acc[-1] === 'b') {
-
             $setAcc('lower', 'b');
         } else {
             $this->setAccidental($direction === 'lower' ? 'b' : '#');

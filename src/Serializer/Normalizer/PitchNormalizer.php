@@ -4,7 +4,7 @@
 namespace App\Serializer\Normalizer;
 
 
-use App\Structures\Pitch;
+use App\Entities\Pitch;
 use JetBrains\PhpStorm\ArrayShape;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Exception\CircularReferenceException;
