@@ -72,6 +72,11 @@ class Pitch
             $this->getOctave();
     }
 
+    public function __clone()
+    {
+
+    }
+
     /**
      * @return string
      */

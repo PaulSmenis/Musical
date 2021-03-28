@@ -79,7 +79,7 @@ class StructuresController extends AbstractController
      *     name="formula",
      *     in="query",
      *     type="string",
-     *     description="Can be set via common name (i.e. 'harmonic minor') but you can pass an array of the form [b3, 5, 1, bb7, #4] as well. Set to major by default.",
+     *     description="Can be set via common name (i.e. 'harmonic minor') but you can pass string of the form '3,1,b5' as well. Set to major by default.",
      *     required=false
      * ),
      * @SWG\Response(

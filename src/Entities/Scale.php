@@ -10,15 +10,15 @@ use App\Entities\Pitch;
 class Scale
 {
     const COMMON_SCALES = [
-        'lydian' => ['1', '2', '3', '#4', '5', '6', '7'],
-        'major' => ['1', '2', '3', '4', '5', '6', '7'],
-        'mixolydian' => ['1', '2', '3', '4', '5', '6', 'b7'],
-        'dorian' => ['1', '2', 'b3', '4', '5', '6', 'b7'],
-        'minor' => ['1', '2', 'b3', '4', '5', 'b6', 'b7'],
-        'phrygian' => ['1', 'b2', 'b3', '4', '5', 'b6', 'b7'],
-        'locrian' => ['1', 'b2', 'b3', '4', 'b5', 'b6', 'b7'],
-        'melodic minor' => ['1', '2', 'b3', '4', '5', '6', '7'],
-        'harmonic minor' => ['1', '2', 'b3', '4', '5', 'b6', '7']
+        'lydian'            => ['1', '2', '3', '#4', '5', '6', '7'],
+        'major'             => ['1', '2', '3', '4', '5', '6', '7'],
+        'mixolydian'        => ['1', '2', '3', '4', '5', '6', 'b7'],
+        'dorian'            => ['1', '2', 'b3', '4', '5', '6', 'b7'],
+        'minor'             => ['1', '2', 'b3', '4', '5', 'b6', 'b7'],
+        'phrygian'          => ['1', 'b2', 'b3', '4', '5', 'b6', 'b7'],
+        'locrian'           => ['1', 'b2', 'b3', '4', 'b5', 'b6', 'b7'],
+        'melodic minor'     => ['1', '2', 'b3', '4', '5', '6', '7'],
+        'harmonic minor'    => ['1', '2', 'b3', '4', '5', 'b6', '7']
     ];
 
     /**
@@ -38,14 +38,14 @@ class Scale
      * @param string $scale_degree_formulaic
      * @throws Exception
      */
-    public function __construct(Pitch $pitch, mixed $scale_formula, string $scale_degree_formulaic = '1')
+    public function __construct(Pitch $pitch, $scale_formula, string $scale_degree_formulaic = '1')
     {
         $map            = [4, 0, 7, 3, 6, 2, 5]; // Bunch of music theory stuff
         $modes          = ['4', '1', '5', '2', '6', '3', '7'];
         $pitch_name     = $pitch->getName();
         $acc            = $pitch->getAccidental();
+        $oct            = $pitch->getOctave();
         $start          = array_search($pitch_name, Pitch::NAMES);
-        // TODO валидировать передачу корректной структуры в формулу
         $process_formulaic = function ($scale_degree_formulaic) use ($modes) {
             if (mb_strlen($scale_degree_formulaic) > 1) {
                 $scale_degree = $scale_degree_formulaic[-1];
@@ -59,13 +59,11 @@ class Scale
             if ($check) {
                 $finish = array_search($scale_degree, $modes);
             } else {
-                throw new Exception('Passed scale degree is not appropriate');
+                throw new Exception('Passed formula is not appropriate');
             }
             return [$scale_degree, $f_acc, $finish];
         };
-
         [$scale_degree, $f_acc, $finish] = $process_formulaic($scale_degree_formulaic);
-
         $scale = [];
         foreach($modes as $val) {
             $val = (int) $val - 1;
@@ -75,7 +73,6 @@ class Scale
         $i      = array_search($pitch_name, $scale);
         $scale  = ArrayHelper::rearrangeFromIndex($scale, $i);
         $less = ($start < $finish);
-
         foreach ($scale as &$name) {
             $name = new Pitch(
                 $name,
@@ -90,7 +87,6 @@ class Scale
         //
         // For example, moving towards 0 instead of finish index in $map in any case would give us
         // a corresponding major scale for given tonic
-
         while ($start !== $finish) {
             if ($less) {
                 $start++;
@@ -106,8 +102,8 @@ class Scale
         if ($scale_degree === '4') {
             $scale[3]->moveHalfstep('raise');
         }
-
         $shift_pitch = function($p, $acc, $order_array) {
+            $p = clone $p;
             if ($acc !== 'natural') {
                 $i = mb_strlen($acc);
                 while ($i--) {
@@ -117,48 +113,60 @@ class Scale
             return $p;
         };
         $shift_scale = function($scale, $acc, $order_array) use ($shift_pitch) {
-            foreach($scale as $p) {
-                $shift_pitch($p, $acc, $order_array);
+            $a = [];
+            foreach($scale as &$p) {
+                $a[] = $shift_pitch($p, $acc, $order_array);
             }
+            return $a;
         };
-        $shift_scale($scale, $f_acc, ['lower', 'raise']);
-        $shift_scale($scale, $acc, ['raise', 'lower']);
-
+        $this->setPitches($scale);
+        $scale = $shift_scale($scale, $f_acc, ['lower', 'raise']);
+        $scale = $shift_scale($scale, $acc, ['raise', 'lower']);
         $scale = (ArrayHelper::rearrangeFromIndex($scale, 8 - (int) $scale_degree));
-
-        if ($scale[0]->getName() === 'C') {
-            $past_c = true;
-        } else {
-            $past_c = false;
-        }
-        foreach($scale as $p) {
-            if ($p->getName() === 'C') {
-                $past_c = true;
-            }
-            $p->setOctave($pitch->getOctave() + (($past_c) ? 1 : 0));
-        }
-        // TODO: Корректно считать октавы, если задана не первая ступень выше C
+        $scale_basic = array_map(function($el) {return $el->getName();}, $scale);
         // Now, since we've constructed our major scale, we can actually apply our scale formula
-        if (is_string($scale_formula)) {
-            if (in_array($scale_formula, array_keys(self::COMMON_SCALES))) {
-                $scale_formula = self::COMMON_SCALES[$scale_formula];
-            } elseif (1 === 3) {
-                // TODO: Добавить поддержку кастомных формул
-            } else {
-                throw new Exception('Passed scale name is not supported');
-            }
+        if (in_array($scale_formula, array_keys(self::COMMON_SCALES))) {
+            $scale_formula = self::COMMON_SCALES[$scale_formula];
         } else {
-            throw new Exception('Passed scale name is not supported');
+            $scale_formula = explode(',', $scale_formula);
         }
-        $apply_formula = function($scale, $formula) use ($process_formulaic, $shift_pitch) {
+        $apply_formula = function ($scale, $formula) use ($process_formulaic, $shift_pitch) {
             $output_pitches = [];
-            foreach($formula as $element) {
+            foreach ($formula as $element) {
                 [$scale_degree, $f_acc] = $process_formulaic($element);
-                $output_pitches[] = $shift_pitch($scale[(int) $scale_degree - 1], $f_acc, ['raise', 'lower']);
+                $output_pitches[] = $shift_pitch($scale[(int)$scale_degree - 1], $f_acc, ['raise', 'lower']);
             }
             return $output_pitches;
         };
-        $this->setPitches($apply_formula($scale, $scale_formula));
+        $scale = $apply_formula($scale, $scale_formula);
+        $octaves = [0];
+        $shifts = [];
+        $c_ind = array_search('C', $scale_basic);
+        for ($i = 0; $i < count($scale_formula) - 1; $i++) {
+            $degree = $scale_formula[$i][-1];
+            $next = (int)$scale_formula[$i + 1][-1];
+            $next_octave = ((int)$degree > $next || $scale_basic[$next - 1] === 'C');
+            if ($next_octave) {
+                $shifts[] = $i + 1;
+            }
+            $octaves[$i + 1] = $octaves[$i] + (int)$next_octave;
+        }
+        $shifts = count($shifts) ? $shifts[intdiv(count($shifts), 2)] : 0;
+        if ((int)$scale_degree_formulaic - 1 > $c_ind) {
+            $oct -= 1;
+        }
+        $target = $octaves[$shifts];
+        $dir = ($target < $oct) ? 1 : -1;
+        while ($target != $oct) {
+            foreach ($octaves as &$o) {
+                $o += $dir;
+            }
+            $target += $dir;
+        }
+        for ($i = 0; $i < count($octaves); $i++) {
+            $scale[$i]->setOctave($octaves[$i]);
+        }
+        $this->setPitches($scale);
     }
 
     public function __toString(): string
@@ -168,6 +176,15 @@ class Scale
             $string .= (string) $pitch . ' ';
         }
         return $string;
+    }
+
+    public function toArray(): array
+    {
+        $array = [];
+        foreach ($this->pitches as $pitch) {
+            $array[] = (string) $pitch;
+        }
+        return $array;
     }
 
     /**
