@@ -158,7 +158,9 @@ class Scale
         if (in_array($scale_formula, array_keys(self::COMMON_SCALES))) {
             $scale_formula = self::COMMON_SCALES[$scale_formula];
         } else {
-            $scale_formula = explode(',', $scale_formula);
+            if (is_string($scale_formula)) {
+                $scale_formula = explode(',', $scale_formula);
+            }
         }
 
         $apply_formula = function (array $scale, array $formula) use ($process_formulaic, $shift_pitch) {
@@ -183,7 +185,7 @@ class Scale
                         return true;
                     }
                 } elseif ($degree > $next_degree) {
-                    if (!($c_ind > $degree - 1 && $c_ind <= $next_degree - 1)) {
+                    if ($c_ind > $degree - 1 && $c_ind < 7 || $c_ind >= 0 && $c_ind <= $next_degree - 1) {
                         $switch++;
                         return true;
                     }

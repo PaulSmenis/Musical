@@ -94,7 +94,7 @@ class ScaleTest extends TestCase
             '4,1',
             '4'
         );
-        $this->assertEquals('Eb0 Bb1', $scale);
+        $this->assertEquals('Eb1 Bb1', $scale);
 
         $scale = (string) new Scale(
             new Pitch('G', 'natural', 4),
@@ -123,5 +123,26 @@ class ScaleTest extends TestCase
             'bb6'
         );
         $this->assertEquals('C#3 D#3 E#3 F#3 G#3 A#3 B#3', $scale);
+
+        $scale = (string) new Scale(
+            new Pitch('F', 'natural', 3),
+            ['7','1','3','5'],
+            '1'
+        );
+        $this->assertEquals('E3 F3 A3 C4', $scale);
+
+        $scale = (string) new Scale(
+            new Pitch('G', 'b', 3),
+            ['b7','1','3','5'],
+            '1'
+        );
+        $this->assertEquals('Fb3 Gb3 Bb3 Db4', $scale);
+
+        $scale = (string) new Scale(
+            new Pitch('G', '#', 4),
+            ['b5','b7','5','1'],
+            '1'
+        );
+        $this->assertEquals('D3 F#3 D#4 G#4', $scale);
     }
 }
