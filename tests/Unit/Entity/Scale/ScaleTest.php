@@ -15,22 +15,15 @@ use UnexpectedValueException;
  */
 class ScaleTest extends TestCase
 {
+    /**
+     * Tests empty scale formula constructor validation
+     */
     public function testFormulaExceptionEmpty()
     {
         $this->expectException(UnexpectedValueException::class);
         $scale = (string) new Scale(
             new Pitch('C', 'natural', 4),
             '',
-            '1'
-        );
-    }
-
-    public function testFormulaException()
-    {
-        $this->expectException(Throwable::class);
-        $scale = (string) new Scale(
-            new Pitch('C', 'natural', 4),
-            null,
             '1'
         );
     }
@@ -44,6 +37,4 @@ class ScaleTest extends TestCase
         );
         $this->assertEquals('C4 D4 E4 F4 G4 A4 B4', $scale);
     }
-
-
 }

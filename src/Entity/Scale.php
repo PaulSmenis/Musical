@@ -5,6 +5,7 @@ namespace App\Entity;
 
 use App\Helper\ArrayHelper;
 use Exception;
+use JetBrains\PhpStorm\Pure;
 use UnexpectedValueException;
 
 /**
@@ -111,7 +112,9 @@ class Scale
             }
             $index = $map[$start];
             if ($index) {
-                $scale[$index - 1]->moveHalfstep($less ? 'lower' : 'raise');
+                /** @var Pitch $p */
+                $p = $scale[$index - 1];
+                $p->moveHalfstep($less ? 'lower' : 'raise');
             }
             if (!$less) {
                 $start--;
@@ -119,12 +122,12 @@ class Scale
         }
 
         if ($scale_degree === '4') {
-            $lydian = $scale[3];
             /** @var Pitch $lydian */
+            $lydian = $scale[3];
             $lydian->moveHalfstep('raise');
         }
 
-        $shift_pitch = function($p, $acc, $order_array) {
+        $shift_pitch = function(Pitch $p, string $acc, array $order_array) {
             $p = clone $p;
             if ($acc !== 'natural') {
                 $i = mb_strlen($acc);
@@ -135,7 +138,7 @@ class Scale
             return $p;
         };
 
-        $shift_scale = function($scale, $acc, $order_array) use ($shift_pitch) {
+        $shift_scale = function(array $scale, string $acc, array $order_array) use ($shift_pitch) {
             $a = [];
             foreach($scale as &$p) {
                 $a[] = $shift_pitch($p, $acc, $order_array);
@@ -159,7 +162,7 @@ class Scale
             $scale_formula = explode(',', $scale_formula);
         }
 
-        $apply_formula = function ($scale, $formula) use ($process_formulaic, $shift_pitch) {
+        $apply_formula = function (array $scale, array $formula) use ($process_formulaic, $shift_pitch) {
             $output_pitches = [];
             foreach ($formula as $element) {
                 [$scale_degree, $f_acc] = $process_formulaic($element);
@@ -200,13 +203,18 @@ class Scale
         }
 
         for ($i = 0; $i < count($octaves); $i++) {
-            $scale[$i]->setOctave($octaves[$i]);
+            /** @var Pitch $p */
+            $p = $scale[$i];
+            $p->setOctave($octaves[$i]);
         }
 
         $this->setPitches($scale);
     }
 
-    public function __toString(): string
+    /**
+     * @return string
+     */
+    #[Pure] public function __toString(): string
     {
         $string = '';
         foreach ($this->pitches as $pitch) {
@@ -215,6 +223,9 @@ class Scale
         return rtrim($string);
     }
 
+    /**
+     * @return array
+     */
     public function toArray(): array
     {
         $array = [];

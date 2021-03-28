@@ -3,7 +3,7 @@
 
 namespace App\Entity;
 
-use OutOfRangeException;
+use OutOfBoundsException;
 use JetBrains\PhpStorm\Pure;
 use Exception;
 use UnexpectedValueException;
@@ -43,7 +43,7 @@ class Pitch
      * @param string|null $name
      * @param string|null $accidental
      * @param int|null $octave
-     * @throws UnexpectedValueException|OutOfRangeException|Exception
+     * @throws UnexpectedValueException|OutOfBoundsException|Exception
      */
     public function __construct(
         ?string $name = null,
@@ -142,7 +142,7 @@ class Pitch
     /**
      * Raises or lowers given pitch up/down an octave (pass direction as either 'raise' or 'lower')
      * @param string $direction
-     * @throws OutOfRangeException
+     * @throws OutOfBoundsException
      */
     public function moveHalfstep(string $direction): void
     {
@@ -152,7 +152,7 @@ class Pitch
         $setAcc = function($dir, $sign) use ($direction, $acc) {
             if ($direction === $dir) {
                 if (mb_strlen($acc) > 2) {
-                    throw new OutOfRangeException('Cannot shift accidental: result exceeds range of triples (###, bbb)');
+                    throw new OutOfBoundsException('Cannot shift accidental: result exceeds range of triples (###, bbb)');
                 } else {
                     $this->setAccidental($acc . $sign);
                 }
@@ -176,7 +176,7 @@ class Pitch
 
     /**
      * @param string $direction
-     * @throws OutOfRangeException
+     * @throws OutOfBoundsException
      */
     public function moveOctave(string $direction)
     {
@@ -185,7 +185,7 @@ class Pitch
         $this->validateDirection($direction);
 
         if ($octave === ($raise ? 8 : 0)) {
-            throw new OutOfRangeException('Cannot shift octave: is out of range (allowed octave range is 0-8)');
+            throw new OutOfBoundsException('Cannot shift octave: is out of range (allowed octave range is 0-8)');
         } else {
             $this->setOctave($octave + 1 - ($raise ? 0 : 2));
         }
