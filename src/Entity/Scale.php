@@ -1,12 +1,14 @@
 <?php
 
 
-namespace App\Entities;
+namespace App\Entity;
 
 use App\Helper\ArrayHelper;
 use Exception;
-use App\Entities\Pitch;
 
+/**
+ * Scale class
+ */
 class Scale
 {
     const COMMON_SCALES = [
@@ -46,6 +48,7 @@ class Scale
         $acc            = $pitch->getAccidental();
         $oct            = $pitch->getOctave();
         $start          = array_search($pitch_name, Pitch::NAMES);
+
         $process_formulaic = function ($scale_degree_formulaic) use ($modes) {
             if (mb_strlen($scale_degree_formulaic) > 1) {
                 $scale_degree = $scale_degree_formulaic[-1];
@@ -63,17 +66,21 @@ class Scale
             }
             return [$scale_degree, $f_acc, $finish];
         };
+
         [$scale_degree, $f_acc, $finish] = $process_formulaic($scale_degree_formulaic);
+
         $scale  = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
         $i      = array_search($pitch_name, $scale);
         $scale  = ArrayHelper::rearrangeFromIndex($scale, $i);
         $less   = ($start < $finish);
+
         foreach ($scale as &$name) {
             $name = new Pitch(
                 $name,
                 'natural'
             );
         }
+
         // If the pitch is G, $scale (as for now) contains G mixolydian scale; B -- B locrian scale, etc.
         //
         // Now we need to move from start to finish in $map,
@@ -82,6 +89,7 @@ class Scale
         //
         // For example, moving towards 0 instead of finish index in $map in any case would give us
         // a corresponding major scale for given tonic
+
         while ($start !== $finish) {
             if ($less) {
                 $start++;
@@ -94,9 +102,13 @@ class Scale
                 $start--;
             }
         }
+
         if ($scale_degree === '4') {
-            $scale[3]->moveHalfstep('raise');
+            $lydian = $scale[3];
+            /** @var Pitch $lydian */
+            $lydian->moveHalfstep('raise');
         }
+
         $shift_pitch = function($p, $acc, $order_array) {
             $p = clone $p;
             if ($acc !== 'natural') {
@@ -107,6 +119,7 @@ class Scale
             }
             return $p;
         };
+
         $shift_scale = function($scale, $acc, $order_array) use ($shift_pitch) {
             $a = [];
             foreach($scale as &$p) {
@@ -114,53 +127,67 @@ class Scale
             }
             return $a;
         };
+
         $this->setPitches($scale);
+
         $scale = $shift_scale($scale, $f_acc, ['lower', 'raise']);
         $scale = $shift_scale($scale, $acc, ['raise', 'lower']);
+
         $scale = (ArrayHelper::rearrangeFromIndex($scale, 8 - (int) $scale_degree));
         $scale_basic = array_map(function($el) {return $el->getName();}, $scale);
+
         // Now, since we've constructed our major scale, we can actually apply our scale formula
+
         if (in_array($scale_formula, array_keys(self::COMMON_SCALES))) {
             $scale_formula = self::COMMON_SCALES[$scale_formula];
         } else {
             $scale_formula = explode(',', $scale_formula);
         }
+
         $apply_formula = function ($scale, $formula) use ($process_formulaic, $shift_pitch) {
             $output_pitches = [];
             foreach ($formula as $element) {
                 [$scale_degree, $f_acc] = $process_formulaic($element);
-                $output_pitches[] = $shift_pitch($scale[(int)$scale_degree - 1], $f_acc, ['raise', 'lower']);
+                $output_pitches[] = $shift_pitch($scale[(int) $scale_degree - 1], $f_acc, ['raise', 'lower']);
             }
             return $output_pitches;
         };
+
         $scale      = $apply_formula($scale, $scale_formula);
         $octaves    = [0];
         $shifts     = [];
         $c_ind      = array_search('C', $scale_basic);
+
         for ($i = 0; $i < count($scale_formula) - 1; $i++) {
-            $degree = $scale_formula[$i][-1];
-            $next = (int)$scale_formula[$i + 1][-1];
-            $next_octave = ((int)$degree > $next || $scale_basic[$next - 1] === 'C');
+            $degree         = $scale_formula[$i][-1];
+            $next           = (int) $scale_formula[$i + 1][-1];
+            $next_octave    = ((int) $degree > $next || $scale_basic[$next - 1] === 'C');
             if ($next_octave) {
                 $shifts[] = $i + 1;
             }
-            $octaves[$i + 1] = $octaves[$i] + (int)$next_octave;
+            $octaves[$i + 1] = $octaves[$i] + (int) $next_octave;
         }
+
         $shifts = count($shifts) ? $shifts[intdiv(count($shifts), 2)] : 0;
-        if ((int)$scale_degree_formulaic - 1 > $c_ind) {
+
+        if ((int) $scale_degree_formulaic - 1 > $c_ind) {
             $oct -= 1;
         }
+
         $target = $octaves[$shifts];
-        $dir = ($target < $oct) ? 1 : -1;
+        $dir    = ($target < $oct) ? 1 : -1;
+
         while ($target != $oct) {
             foreach ($octaves as &$o) {
                 $o += $dir;
             }
             $target += $dir;
         }
+
         for ($i = 0; $i < count($octaves); $i++) {
             $scale[$i]->setOctave($octaves[$i]);
         }
+
         $this->setPitches($scale);
     }
 

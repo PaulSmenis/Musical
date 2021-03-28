@@ -1,4 +1,10 @@
 /var
 /vendor
-/docker-compose
-/.env
+/docker-compose/.data
+.env
+/public/bundles
+###> symfony/phpunit-bridge ###
+.phpunit
+.phpunit.result.cache
+/phpunit.xml
+###< symfony/phpunit-bridge ###
