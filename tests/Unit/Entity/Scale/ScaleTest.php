@@ -6,7 +6,6 @@ namespace App\Tests\Unit\Entity\Scale;
 use App\Entity\Pitch;
 use App\Entity\Scale;
 use PHPUnit\Framework\TestCase;
-use Throwable;
 use UnexpectedValueException;
 
 /**
@@ -25,6 +24,19 @@ class ScaleTest extends TestCase
             new Pitch('C', 'natural', 4),
             '',
             '1'
+        );
+    }
+
+    /**
+     * Tests empty degree formula constructor validation
+     */
+    public function testDegreeExceptionEmpty()
+    {
+        $this->expectException(UnexpectedValueException::class);
+        $scale = (string) new Scale(
+            new Pitch('C', 'natural', 4),
+            '3',
+            ''
         );
     }
 
@@ -144,5 +156,33 @@ class ScaleTest extends TestCase
             '1'
         );
         $this->assertEquals('D3 F#3 D#4 G#4', $scale);
+
+        $scale = (string) new Scale(
+            new Pitch('C', '###', 4),
+            '3,1',
+            '#7'
+        );
+        $this->assertEquals('F##3 D#4', $scale);
+
+        $scale = (string) new Scale(
+            new Pitch('C', '###', 4),
+            '1,3',
+            '#7'
+        );
+        $this->assertEquals('D#4 F##4', $scale);
+
+        $scale = (string) new Scale(
+            new Pitch('A', 'b', 0),
+            'lydian',
+            '1'
+        );
+        $this->assertEquals('Ab0 Bb0 C1 D1 Eb1 F1 G1', $scale);
+
+        $scale = (string) new Scale(
+            new Pitch('F', '#', 3),
+            '5,1,4',
+            '1'
+        );
+        $this->assertEquals('C#3 F#3 B3', $scale);
     }
 }

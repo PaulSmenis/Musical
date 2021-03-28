@@ -178,7 +178,7 @@
       <workItem from="1616914861773" duration="160000" />
       <workItem from="1616915030208" duration="5426000" />
       <workItem from="1616920871250" duration="16673000" />
-      <workItem from="1616941924148" duration="13787000" />
+      <workItem from="1616941924148" duration="15554000" />
     </task>
     <task id="LOCAL-00001" summary="init commit">
       <created>1616309758145</created>
@@ -285,7 +285,14 @@
       <option name="project" value="LOCAL" />
       <updated>1616954310715</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="fix">
+      <created>1616955720842</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1616955720842</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -295,7 +302,6 @@
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <MESSAGE value="init commit" />
-    <MESSAGE value="fix" />
     <MESSAGE value="add swagger documentation + api description + pitch normalizer fix" />
     <MESSAGE value="add scalar structures generation" />
     <MESSAGE value="fix halfstep move" />
@@ -309,7 +315,8 @@
     <MESSAGE value="More doc + passed null support + more tests" />
     <MESSAGE value="some doc refining" />
     <MESSAGE value="bugfixes + tests" />
-    <option name="LAST_COMMIT_MESSAGE" value="bugfixes + tests" />
+    <MESSAGE value="fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

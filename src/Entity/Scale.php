@@ -120,10 +120,10 @@ class Scale
             }
         }
 
-        if ($scale_degree === '4') {
+        if ($scale_degree === '4' || $scale[0]->getName() === 'F') {
             /** @var Pitch $lydian */
             $lydian = $scale[3];
-            $lydian->moveHalfstep('raise');
+            $lydian->moveHalfstep('lower');
         }
 
         $shift_pitch = function(Pitch $p, string $acc, array $order_array) {
