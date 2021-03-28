@@ -184,5 +184,12 @@ class ScaleTest extends TestCase
             '1'
         );
         $this->assertEquals('C#3 F#3 B3', $scale);
+
+        $scale = (string) new Scale(
+            new Pitch('D', 'b', 3),
+            '6,b3',
+            '1'
+        );
+        $this->assertEquals('Bb2 Fb3', $scale);
     }
 }
