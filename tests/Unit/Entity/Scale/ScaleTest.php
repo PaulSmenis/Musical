@@ -191,5 +191,26 @@ class ScaleTest extends TestCase
             '1'
         );
         $this->assertEquals('Bb2 Fb3', $scale);
+
+        $scale = (string) new Scale(
+            new Pitch('G', 'natural', 3),
+            ['7', '5', '#4', '1'],
+            '1'
+        );
+        $this->assertEquals('F#1 D2 C#3 G3', $scale);
+
+        $scale = (string) new Scale(
+            new Pitch('A', 'b', 2),
+            ['1', '5', '1', '3', '1'],
+            '1'
+        );
+        $this->assertEquals('Ab2 Eb3 Ab3 C4 Ab4', $scale);
+
+        $scale = (string) new Scale(
+            new Pitch('D', 'b', 2),
+            ['5', '1', '5'],
+            '1'
+        );
+        $this->assertEquals('Ab1 Db2 Ab2', $scale);
     }
 }
