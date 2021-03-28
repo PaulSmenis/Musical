@@ -3,7 +3,7 @@
 
 namespace App\Entity;
 
-use OutOfRangeException;
+use OutOfBoundsException;
 use JetBrains\PhpStorm\Pure;
 use Exception;
 use UnexpectedValueException;
@@ -18,16 +18,19 @@ class Pitch
     public const DIRECTIONS     = ['lower', 'raise'];
 
     /**
+     * Pitch name (e.g. G)
      * @var string $name
      */
     private string $name;
 
     /**
+     * Pitch accidental (e.g. #); Triples at max
      * @var string $accidental
      */
     private string $accidental;
 
     /**
+     * Pitch octave (e.g. 3); 0-8 are valid (SPN)
      * @var int $octave
      */
     private int $octave;
@@ -35,33 +38,34 @@ class Pitch
     /**
      * Pitch constructor.
      *
-     * If some value is not passed, random is used. Passing empty values results leads to producing random value (within given restrictions).
+     * If some value is not passed or is null, random is used.
+     * Passing empty values results leads to producing random value (within given restrictions).
      * @param string|null $name
      * @param string|null $accidental
      * @param int|null $octave
-     * @throws UnexpectedValueException|OutOfRangeException|Exception
+     * @throws UnexpectedValueException|OutOfBoundsException|Exception
      */
     public function __construct(
-        string $name = null,
-        string $accidental = null,
-        int $octave = null
+        ?string $name = null,
+        ?string $accidental = null,
+        ?int $octave = null
     )
     {
-        if (!$name) {
+        if (is_null($name)) {
             $this->name = $this::NAMES[array_rand($this::NAMES)];
         } else {
             $this->validateName($name);
             $this->name = $name;
         }
 
-        if (!$accidental) {
+        if (is_null($accidental)) {
             $this->accidental = $this::ACCIDENTALS[array_rand($this::ACCIDENTALS)];
         } else {
             $this->validateAccidental($accidental);
             $this->accidental = $accidental;
         }
 
-        if (!$octave) {
+        if (is_null($octave)) {
             $this->octave = random_int(0, 8);
         } else {
             $this->validateOctave($octave);
@@ -138,7 +142,7 @@ class Pitch
     /**
      * Raises or lowers given pitch up/down an octave (pass direction as either 'raise' or 'lower')
      * @param string $direction
-     * @throws OutOfRangeException
+     * @throws OutOfBoundsException
      */
     public function moveHalfstep(string $direction): void
     {
@@ -148,7 +152,7 @@ class Pitch
         $setAcc = function($dir, $sign) use ($direction, $acc) {
             if ($direction === $dir) {
                 if (mb_strlen($acc) > 2) {
-                    throw new OutOfRangeException('Cannot shift accidental: result exceeds range of triples (###, bbb)');
+                    throw new OutOfBoundsException('Cannot shift accidental: result exceeds range of triples (###, bbb)');
                 } else {
                     $this->setAccidental($acc . $sign);
                 }
@@ -172,7 +176,7 @@ class Pitch
 
     /**
      * @param string $direction
-     * @throws OutOfRangeException
+     * @throws OutOfBoundsException
      */
     public function moveOctave(string $direction)
     {
@@ -181,7 +185,7 @@ class Pitch
         $this->validateDirection($direction);
 
         if ($octave === ($raise ? 8 : 0)) {
-            throw new OutOfRangeException('Cannot shift octave: is out of range (allowed octave range is 0-8)');
+            throw new OutOfBoundsException('Cannot shift octave: is out of range (allowed octave range is 0-8)');
         } else {
             $this->setOctave($octave + 1 - ($raise ? 0 : 2));
         }

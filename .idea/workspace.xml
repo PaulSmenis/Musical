@@ -1,33 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="49202a3b-1cf3-411b-942a-b7e3e03295aa" name="Default Changelist" comment="add basic response-passed exceptions">
-      <change afterPath="$PROJECT_DIR$/.env.test" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/Musical.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/php.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/phpunit" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/packages/test/validator.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/packages/validator.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/phpunit.xml.dist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/Unit/Entity/Pitch/PitchTest.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/Unit/Entity/Scale/ScaleTest.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/bootstrap.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/composer.json" beforeDir="false" afterPath="$PROJECT_DIR$/composer.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/composer.lock" beforeDir="false" afterPath="$PROJECT_DIR$/composer.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/nginx/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose/nginx/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/nginx/default.conf" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose/nginx/default.conf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/php/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose/php/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/bundles/nelmioapidoc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Controller/StructuresController.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Controller/StructuresController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Entities/Pitch.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entity/Pitch.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Entities/Scale.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entity/Scale.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Serializer/Normalizer/ScaleNormalizer.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Serializer/Normalizer/ScaleNormalizer.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/symfony.lock" beforeDir="false" afterPath="$PROJECT_DIR$/symfony.lock" afterDir="false" />
+    <list default="true" id="49202a3b-1cf3-411b-942a-b7e3e03295aa" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/src/Entity/Scale.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entity/Scale.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/Unit/Entity/Scale/ScaleTest.php" beforeDir="false" afterPath="$PROJECT_DIR$/tests/Unit/Entity/Scale/ScaleTest.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -201,7 +177,8 @@
       <workItem from="1616906948559" duration="7197000" />
       <workItem from="1616914861773" duration="160000" />
       <workItem from="1616915030208" duration="5426000" />
-      <workItem from="1616920871250" duration="14249000" />
+      <workItem from="1616920871250" duration="16673000" />
+      <workItem from="1616941924148" duration="13787000" />
     </task>
     <task id="LOCAL-00001" summary="init commit">
       <created>1616309758145</created>
@@ -280,7 +257,35 @@
       <option name="project" value="LOCAL" />
       <updated>1616926762224</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="Add unit tests + small refactor + pitch validation coverage">
+      <created>1616935727703</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1616935727703</updated>
+    </task>
+    <task id="LOCAL-00013" summary="More doc + passed null support + more tests">
+      <created>1616942471533</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1616942471533</updated>
+    </task>
+    <task id="LOCAL-00014" summary="some doc refining">
+      <created>1616943086954</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1616943086954</updated>
+    </task>
+    <task id="LOCAL-00015" summary="bugfixes + tests">
+      <created>1616954310715</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1616954310715</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -300,7 +305,11 @@
     <MESSAGE value="я спать" />
     <MESSAGE value="add custom scale structure formulas + proper octave setting" />
     <MESSAGE value="add basic response-passed exceptions" />
-    <option name="LAST_COMMIT_MESSAGE" value="add basic response-passed exceptions" />
+    <MESSAGE value="Add unit tests + small refactor + pitch validation coverage" />
+    <MESSAGE value="More doc + passed null support + more tests" />
+    <MESSAGE value="some doc refining" />
+    <MESSAGE value="bugfixes + tests" />
+    <option name="LAST_COMMIT_MESSAGE" value="bugfixes + tests" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
