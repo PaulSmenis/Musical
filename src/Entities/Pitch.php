@@ -88,7 +88,7 @@ class Pitch
         if (in_array($name, $this::NAMES)) {
             $this->name = $name;
         } else {
-            throw new Exception('Name is not an appropriate value');
+            throw new Exception('Passed name value is not appropriate');
         }
     }
 
@@ -131,16 +131,7 @@ class Pitch
     }
 
     /**
-     * @return string
-     */
-    #[Pure] public function getPitchClass(): string
-    {
-        return $this->getName() . $this->getAccidental();
-    }
-
-    /**
      * @param string $direction
-     * @param int $times
      */
     public function moveHalfstep(string $direction): void
     {
@@ -150,7 +141,7 @@ class Pitch
         $setAcc = function($dir, $sign) use ($direction, $acc) {
             if ($direction === $dir) {
                 if (mb_strlen($acc) > 2) {
-                    throw new Exception('Accidental exceeds range of triples');
+                    throw new Exception('Cannot shift accidental: result exceeds range of triples (###, bbb)');
                 } else {
                     $this->setAccidental($acc . $sign);
                 }
@@ -182,7 +173,7 @@ class Pitch
         $this->validateDirection($direction);
 
         if ($octave === ($raise ? 8 : 0)) {
-            throw new Exception('Octave is out of range');
+            throw new Exception('Cannot shift octave: is out of range (allowed octave range is 0-8)');
         } else {
             $this->setOctave($octave + 1 - ($raise ? 0 : 2));
         }
