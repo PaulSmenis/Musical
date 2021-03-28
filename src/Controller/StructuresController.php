@@ -11,6 +11,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
+use Throwable;
 
 /**
  * @Route("/api/structures")
@@ -42,7 +43,7 @@ class StructuresController extends AbstractController
     }
 
     /**
-     * Generates and returns a certain pitch structure (interval, chord, scale) built on tonic.
+     * Generates and returns a certain pitch structure (interval, chord, scale) built on tonic
      *
      * Basically an array of pitches.
      *
@@ -79,7 +80,11 @@ class StructuresController extends AbstractController
      *     name="formula",
      *     in="query",
      *     type="string",
-     *     description="Can be set via common name (i.e. 'harmonic minor') but you can pass string of the form '3,1,b5' as well. Set to major by default.",
+     *     description="
+     * Can be set via common name (i.e. 'harmonic minor') but you can pass string of the form '3,1,b5' as well.
+     * Octaves are set according to the formula and common sense.
+     * Hence, pitch octaves are inverted based on pitch order and with regard to passed reference pitch octave value.
+     * Set to major by default.",
      *     required=false
      * ),
      * @SWG\Response(
@@ -101,15 +106,25 @@ class StructuresController extends AbstractController
      */
     public function scale(Request $request): Response
     {
-        $scale = new Scale(
-            new Pitch(
+        try {
+            $pitch = new Pitch(
                 $request->get('name') ?? null,
                 $request->get('accidental') ?? null,
                 $request->get('octave') ?? null
-            ),
-            $request->get('formula') ?? 'major',
-            $request->get('degree') ?? 1
-        );
+            );
+        } catch (Throwable $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $scale = new Scale(
+                $pitch,
+                $request->get('formula') ?? 'major',
+                $request->get('degree') ?? '1'
+            );
+        } catch (Throwable $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
 
         return $this->json($scale);
     }

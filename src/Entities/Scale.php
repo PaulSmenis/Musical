@@ -38,7 +38,7 @@ class Scale
      * @param string $scale_degree_formulaic
      * @throws Exception
      */
-    public function __construct(Pitch $pitch, $scale_formula, string $scale_degree_formulaic = '1')
+    public function __construct(Pitch $pitch, array|string $scale_formula, string $scale_degree_formulaic = '1')
     {
         $map            = [4, 0, 7, 3, 6, 2, 5]; // Bunch of music theory stuff
         $modes          = ['4', '1', '5', '2', '6', '3', '7'];
@@ -64,15 +64,10 @@ class Scale
             return [$scale_degree, $f_acc, $finish];
         };
         [$scale_degree, $f_acc, $finish] = $process_formulaic($scale_degree_formulaic);
-        $scale = [];
-        foreach($modes as $val) {
-            $val = (int) $val - 1;
-            $scale[] = Pitch::NAMES[$val];
-        }
-        $scale = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+        $scale  = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
         $i      = array_search($pitch_name, $scale);
         $scale  = ArrayHelper::rearrangeFromIndex($scale, $i);
-        $less = ($start < $finish);
+        $less   = ($start < $finish);
         foreach ($scale as &$name) {
             $name = new Pitch(
                 $name,
@@ -138,10 +133,10 @@ class Scale
             }
             return $output_pitches;
         };
-        $scale = $apply_formula($scale, $scale_formula);
-        $octaves = [0];
-        $shifts = [];
-        $c_ind = array_search('C', $scale_basic);
+        $scale      = $apply_formula($scale, $scale_formula);
+        $octaves    = [0];
+        $shifts     = [];
+        $c_ind      = array_search('C', $scale_basic);
         for ($i = 0; $i < count($scale_formula) - 1; $i++) {
             $degree = $scale_formula[$i][-1];
             $next = (int)$scale_formula[$i + 1][-1];
