@@ -1,13 +1,13 @@
 version: '3'
 services:
   php:
-    build: ./images/php
+    build: docker-compose/php
     ports:
       - 9001:9000
     volumes:
       - .:/var/www/symfony:cached
   nginx:
-    build: ./images/nginx
+    build: docker-compose/nginx
     ports:
       - 81:80
     volumes:

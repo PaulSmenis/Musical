@@ -2,8 +2,8 @@
 
 namespace App\Controller;
 
-use App\Entities\Pitch;
-use App\Entities\Scale;
+use App\Entity\Pitch;
+use App\Entity\Scale;
 use Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
