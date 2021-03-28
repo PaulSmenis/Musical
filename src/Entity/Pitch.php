@@ -18,16 +18,19 @@ class Pitch
     public const DIRECTIONS     = ['lower', 'raise'];
 
     /**
+     * Pitch name (e.g. G)
      * @var string $name
      */
     private string $name;
 
     /**
+     * Pitch accidental (e.g. #); Triples at max
      * @var string $accidental
      */
     private string $accidental;
 
     /**
+     * Pitch octave (e.g. 3); 0-8 are valid (SPN)
      * @var int $octave
      */
     private int $octave;
@@ -35,33 +38,34 @@ class Pitch
     /**
      * Pitch constructor.
      *
-     * If some value is not passed, random is used. Passing empty values results leads to producing random value (within given restrictions).
+     * If some value is not passed or is null, random is used.
+     * Passing empty values results leads to producing random value (within given restrictions).
      * @param string|null $name
      * @param string|null $accidental
      * @param int|null $octave
      * @throws UnexpectedValueException|OutOfRangeException|Exception
      */
     public function __construct(
-        string $name = null,
-        string $accidental = null,
-        int $octave = null
+        ?string $name = null,
+        ?string $accidental = null,
+        ?int $octave = null
     )
     {
-        if (!$name) {
+        if (is_null($name)) {
             $this->name = $this::NAMES[array_rand($this::NAMES)];
         } else {
             $this->validateName($name);
             $this->name = $name;
         }
 
-        if (!$accidental) {
+        if (is_null($accidental)) {
             $this->accidental = $this::ACCIDENTALS[array_rand($this::ACCIDENTALS)];
         } else {
             $this->validateAccidental($accidental);
             $this->accidental = $accidental;
         }
 
-        if (!$octave) {
+        if (is_null($octave)) {
             $this->octave = random_int(0, 8);
         } else {
             $this->validateOctave($octave);

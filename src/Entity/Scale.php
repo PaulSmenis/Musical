@@ -5,6 +5,7 @@ namespace App\Entity;
 
 use App\Helper\ArrayHelper;
 use Exception;
+use UnexpectedValueException;
 
 /**
  * Scale class
@@ -32,22 +33,36 @@ class Scale
      * Construct a scale from some given tonic.
      * N.B.: Intervals are treated as a ditonic scale.
      *
-     * @param Pitch $pitch
-     * Some pitch you pass as a reference to build other pitches (usually it's the tonic)
-     * @param array|string $scale_formula
-     * Scale formula contains either strings which represent scale degrees -- e.g. ['1', 'b4']
-     * or a string with one of generic scale formulas (see COMMON_DIATONIC_SCALES).
-     * @param string $scale_degree_formulaic
+     * @param Pitch|null $pitch
+     * Some pitch you pass as a reference to build other pitches (usually it's the tonic). Random by default.1
+     * @param array|string|null $scale_formula
+     * Scale formula contains either strings which represent scale degrees -- e.g. 'b3,5,1'
+     * or a string with one of generic scale formulas (see COMMON_DIATONIC_SCALES). Major by default.
+     * @param string|null $scale_degree_formulaic
+     * Denotes which scale degree you've passed as a pitch (e.g. 'b3'). Tonic by default.
      * @throws Exception
      */
-    public function __construct(Pitch $pitch, array|string $scale_formula, string $scale_degree_formulaic = '1')
+    public function __construct(?Pitch $pitch, array|string|null $scale_formula = 'major', ?string $scale_degree_formulaic = '1')
     {
+        if (is_null($pitch)) {
+            $pitch = new Pitch;
+        }
+
+        if (is_null($scale_formula)) {
+            $scale_formula = 'major';
+        }
+
+        if (is_null($scale_degree_formulaic)) {
+            $scale_degree_formulaic = '1';
+        }
+
         $map            = [4, 0, 7, 3, 6, 2, 5]; // Bunch of music theory stuff
         $modes          = ['4', '1', '5', '2', '6', '3', '7'];
         $pitch_name     = $pitch->getName();
         $acc            = $pitch->getAccidental();
         $oct            = $pitch->getOctave();
         $start          = array_search($pitch_name, Pitch::NAMES);
+
 
         $process_formulaic = function ($scale_degree_formulaic) use ($modes) {
             if (mb_strlen($scale_degree_formulaic) > 1) {
@@ -62,7 +77,7 @@ class Scale
             if ($check) {
                 $finish = array_search($scale_degree, $modes);
             } else {
-                throw new Exception('Passed formula is not appropriate');
+                throw new UnexpectedValueException('Passed value (either formula or degree) is invalid. Check on documentation.');
             }
             return [$scale_degree, $f_acc, $finish];
         };
@@ -197,7 +212,7 @@ class Scale
         foreach ($this->pitches as $pitch) {
             $string .= (string) $pitch . ' ';
         }
-        return $string;
+        return rtrim($string);
     }
 
     public function toArray(): array
