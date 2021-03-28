@@ -64,7 +64,6 @@ class Scale
         $oct            = $pitch->getOctave();
         $start          = array_search($pitch_name, Pitch::NAMES);
 
-
         $process_formulaic = function ($scale_degree_formulaic) use ($modes) {
             if (mb_strlen($scale_degree_formulaic) > 1) {
                 $scale_degree = $scale_degree_formulaic[-1];
@@ -175,27 +174,46 @@ class Scale
         $octaves    = [0];
         $shifts     = [];
         $c_ind      = array_search('C', $scale_basic);
+        $switch     = 0;
+
+        $check_octave = function (int $degree, int $next_degree, int $c_ind, int $is_c) use ($scale_basic, &$switch) {
+            if (!$is_c) {
+                if ($degree < $next_degree) {
+                    if ($c_ind > $degree - 1 && $c_ind <= $next_degree - 1) {
+                        return true;
+                    }
+                } elseif ($degree > $next_degree) {
+                    if (!($c_ind > $degree - 1 && $c_ind <= $next_degree - 1)) {
+                        $switch++;
+                        return true;
+                    }
+                }
+            }
+            if ($degree === $next_degree) {
+                return true;
+            }
+            return false;
+        };
 
         for ($i = 0; $i < count($scale_formula) - 1; $i++) {
-            $degree         = $scale_formula[$i][-1];
-            $next           = (int) $scale_formula[$i + 1][-1];
-            $next_octave    = ((int) $degree > $next || $scale_basic[$next - 1] === 'C');
-            if ($next_octave) {
+            $degree         = (int) $scale_formula[$i][-1];
+            $next_degree    = (int) $scale_formula[$i + 1][-1];
+            $is_c           = ($degree - 1 === $c_ind);
+            if ($next_octave = $check_octave($degree, $next_degree, $c_ind, $is_c)) {
                 $shifts[] = $i + 1;
             }
             $octaves[$i + 1] = $octaves[$i] + (int) $next_octave;
         }
 
-        $shifts = count($shifts) ? $shifts[intdiv(count($shifts), 2)] : 0;
+        $shifts = (count($shifts)) ? $shifts[intdiv(count($shifts), 2)] : 0;
+        $target = ($switch) ? $octaves[$shifts] : 0;
+        $dir    = ($target < $oct) ? 1 : -1;
 
         if ((int) $scale_degree_formulaic - 1 > $c_ind) {
             $oct -= 1;
         }
 
-        $target = $octaves[$shifts];
-        $dir    = ($target < $oct) ? 1 : -1;
-
-        while ($target != $oct) {
+        while ($target !== $oct) {
             foreach ($octaves as &$o) {
                 $o += $dir;
             }
