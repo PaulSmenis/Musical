@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="49202a3b-1cf3-411b-942a-b7e3e03295aa" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/src/Entity/Scale.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entity/Scale.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/Unit/Entity/Scale/ScaleTest.php" beforeDir="false" afterPath="$PROJECT_DIR$/tests/Unit/Entity/Scale/ScaleTest.php" afterDir="false" />
-    </list>
+    <list default="true" id="49202a3b-1cf3-411b-942a-b7e3e03295aa" name="Default Changelist" comment="Lydian fix" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -19,7 +16,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="doc_and_other_features" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -297,6 +294,17 @@
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
