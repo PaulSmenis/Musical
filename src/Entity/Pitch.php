@@ -3,9 +3,9 @@
 
 namespace App\Entity;
 
+use Exception;
 use OutOfBoundsException;
 use JetBrains\PhpStorm\Pure;
-use Exception;
 use UnexpectedValueException;
 
 /**
@@ -15,6 +15,8 @@ class Pitch
 {
     public const NAMES          = ['F', 'C', 'G', 'D', 'A', 'E', 'B'];
     public const ACCIDENTALS    = ['bbb', 'bb', 'b', 'natural', '#', '##', '###'];
+    public const ACCIDENTALS_UPWARDS = ['#', '##', '###'];
+    public const ACCIDENTALS_DOWNWARDS = ['bbb', 'bb', 'b'];
     public const DIRECTIONS     = ['lower', 'raise'];
 
     /**
@@ -71,6 +73,8 @@ class Pitch
             $this->validateOctave($octave);
             $this->octave = $octave;
         }
+
+        $this->validateRange();
     }
 
     /**
@@ -101,6 +105,8 @@ class Pitch
     {
         $this->validateName($name);
         $this->name = $name;
+
+        $this->validateRange();
     }
 
     /**
@@ -119,6 +125,8 @@ class Pitch
     {
         $this->validateAccidental($accidental);
         $this->accidental = $accidental;
+
+        $this->validateRange();
     }
 
     /**
@@ -137,114 +145,138 @@ class Pitch
     {
         $this->validateOctave($octave);
         $this->octave = $octave;
+
+        $this->validateRange();
+    }
+
+    /**
+     * Raises or lowers given pitch up/down a halfstep (pass direction as either 'raise' or 'lower')
+     *
+     * @param string $direction
+     * @param int|null $halfsteps
+     * @throws OutOfBoundsException
+     */
+    public function moveHalfstep(string $direction, ?int $halfsteps = 1): void
+    {
+        while ($halfsteps) {
+            $this->validateDirection($direction);
+            $acc = $this->getAccidental();
+
+            $setAcc = function($dir, $sign) use ($direction, $acc) {
+                if ($direction === $dir) {
+                    if (mb_strlen($acc) > 2) {
+                        throw new OutOfBoundsException('Cannot shift accidental: result exceeds range of triples (###, bbb).');
+                    } else {
+                        $this->setAccidental($acc . $sign);
+                    }
+                } else {
+                    if (mb_strlen($acc) === 1) {
+                        $this->setAccidental('natural');
+                    } else {
+                        $this->setAccidental(substr($acc, 0, -1));
+                    }
+                }
+            };
+
+            if ($acc[-1] === '#') {
+                $setAcc('raise', '#');
+            } else if ($acc[-1] === 'b') {
+                $setAcc('lower', 'b');
+            } else {
+                $this->setAccidental($direction === 'lower' ? 'b' : '#');
+            }
+
+            $this->validateRange();
+
+            $halfsteps--;
+        }
     }
 
     /**
      * Raises or lowers given pitch up/down an octave (pass direction as either 'raise' or 'lower')
+     *
      * @param string $direction
+     * @param int|null $octaves
      * @throws OutOfBoundsException
      */
-    public function moveHalfstep(string $direction): void
+    public function moveOctave(string $direction, ?int $octaves = 1)
     {
-        $this->validateDirection($direction);
-        $acc = $this->getAccidental();
+        while ($octaves) {
+            $octave = $this->getOctave();
+            $raise = ($direction === 'raise');
+            $this->validateDirection($direction);
 
-        $setAcc = function($dir, $sign) use ($direction, $acc) {
-            if ($direction === $dir) {
-                if (mb_strlen($acc) > 2) {
-                    throw new OutOfBoundsException('Cannot shift accidental: result exceeds range of triples (###, bbb)');
-                } else {
-                    $this->setAccidental($acc . $sign);
-                }
+            if ($octave === ($raise ? 8 : 0)) {
+                throw new OutOfBoundsException('Cannot shift octave: is out of range (allowed octave range is 0-8).');
             } else {
-                if (mb_strlen($acc) === 1) {
-                    $this->setAccidental('natural');
-                } else {
-                    $this->setAccidental(substr($acc, 0, -1));
-                }
+                $this->setOctave($octave + 1 - ($raise ? 0 : 2));
             }
-        };
 
-        if ($acc[-1] === '#') {
-            $setAcc('raise', '#');
-        } else if ($acc[-1] === 'b') {
-            $setAcc('lower', 'b');
-        } else {
-            $this->setAccidental($direction === 'lower' ? 'b' : '#');
+            $this->validateRange();
+            $octaves--;
         }
     }
 
     /**
      * @param string $direction
-     * @throws OutOfBoundsException
-     */
-    public function moveOctave(string $direction)
-    {
-        $octave = $this->getOctave();
-        $raise = ($direction === 'raise');
-        $this->validateDirection($direction);
-
-        if ($octave === ($raise ? 8 : 0)) {
-            throw new OutOfBoundsException('Cannot shift octave: is out of range (allowed octave range is 0-8)');
-        } else {
-            $this->setOctave($octave + 1 - ($raise ? 0 : 2));
-        }
-    }
-
-    /**
-     * @param string $direction
-     * @return bool
+     * @return void
      * @throws UnexpectedValueException
      */
-    private function validateDirection(string $direction): bool
+    private function validateDirection(string $direction): void
     {
         if (!in_array($direction, $this::DIRECTIONS)) {
             throw new UnexpectedValueException('Not a valid direction');
-        } else {
-            return true;
         }
     }
 
     /**
      * @param string $accidental
-     * @return bool
+     * @return void
      * @throws UnexpectedValueException
      */
-    private function validateAccidental(string $accidental): bool
+    private function validateAccidental(string $accidental): void
     {
         if (!in_array($accidental, $this::ACCIDENTALS)) {
-            throw new UnexpectedValueException('Not a valid accidental. 
-            Should be either "natural" or sharps/flats (up to 3)');
-        } else {
-            return true;
+            throw new UnexpectedValueException('Not a valid accidental. Should be either natural or sharps/flats (up to 3)');
         }
     }
 
     /**
      * @param string $name
-     * @return bool
+     * @return void
      * @throws UnexpectedValueException
      */
-    private function validateName(string $name): bool
+    private function validateName(string $name): void
     {
         if (!in_array($name, $this::NAMES)) {
             throw new UnexpectedValueException('Not a valid name. Should be a character from A to G.');
-        } else {
-            return true;
         }
     }
 
     /**
      * @param int $octave
-     * @return bool
+     * @return void
      * @throws UnexpectedValueException
      */
-    private function validateOctave(int $octave): bool
+    private function validateOctave(int $octave): void
     {
         if ($octave < 0 || $octave > 8) {
             throw new UnexpectedValueException('Not a valid octave. Should be in the range of 0-8.');
-        } else {
-            return true;
+        }
+    }
+
+    /**
+     * @return void
+     * @throws OutOfBoundsException
+     */
+    private function validateRange(): void
+    {
+        if (!$this->octave) {
+            if ($this->name === 'C' && in_array($this->accidental, $this::ACCIDENTALS_DOWNWARDS)
+                ||
+                $this->name === 'D' && $this->accidental === 'bbb') {
+                throw new OutOfBoundsException('Pitch is out of range from below. Cannot be lower than C0.');
+            }
         }
     }
 }

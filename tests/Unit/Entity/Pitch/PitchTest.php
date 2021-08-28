@@ -4,9 +4,9 @@
 namespace App\Tests\Unit\Entity\Pitch;
 
 use App\Entity\Pitch;
-use OutOfRangeException;
-use PHPUnit\Framework\TestCase;
+use OutOfBoundsException;
 use UnexpectedValueException;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Pitch entity unit testing class
@@ -84,5 +84,32 @@ class PitchTest extends TestCase
     {
         $this->expectException(UnexpectedValueException::class);
         new Pitch('C', '', 5);
+    }
+
+    /**
+     * Tests pitch range validation method after setting wrong accidental
+     */
+    public function testRangeValidationWithAccidentalSetter()
+    {
+        $this->expectException(OutOfBoundsException::class);
+        (new Pitch('D', 'bb', 0))->setAccidental('bbb');
+    }
+
+    /**
+     * Tests pitch range validation method after setting wrong octave
+     */
+    public function testRangeValidationWithOctaveSetter()
+    {
+        $this->expectException(OutOfBoundsException::class);
+        (new Pitch('C', 'b', 3))->setOctave(0);
+    }
+
+    /**
+     * Tests pitch range validation method after setting wrong name
+     */
+    public function testRangeValidationWithNameSetter()
+    {
+        $this->expectException(OutOfBoundsException::class);
+        (new Pitch('G', 'bb', 0))->setName('C');
     }
 }

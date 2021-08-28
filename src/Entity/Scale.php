@@ -3,8 +3,8 @@
 
 namespace App\Entity;
 
-use App\Helper\ArrayHelper;
 use Exception;
+use App\Helper\ArrayHelper;
 use JetBrains\PhpStorm\Pure;
 use UnexpectedValueException;
 
@@ -35,7 +35,7 @@ class Scale
      * N.B.: Intervals are treated as a ditonic scale.
      *
      * @param Pitch|null $pitch
-     * Some pitch you pass as a reference to build other pitches (usually it's the tonic). Random by default.1
+     * Some pitch you pass as a reference to build other pitches (usually it's the tonic). Random by default.
      * @param array|string|null $scale_formula
      * Scale formula contains either strings which represent scale degrees -- e.g. 'b3,5,1'
      * or a string with one of generic scale formulas (see COMMON_DIATONIC_SCALES). Major by default.
@@ -238,7 +238,7 @@ class Scale
     {
         $string = '';
         foreach ($this->pitches as $pitch) {
-            $string .= (string) $pitch . ' ';
+            $string .= ((string) $pitch) . ' ';
         }
         return rtrim($string);
     }

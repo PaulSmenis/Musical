@@ -2,16 +2,16 @@ version: '3'
 services:
   php:
     build: docker-compose/php
-    ports:
-      - 9001:9000
     volumes:
-      - .:/var/www/symfony:cached
+      - .:/var/www/symfony
+      - ./docker-compose/php/php.ini:/usr/local/etc/php/php.ini
   nginx:
-    build: docker-compose/nginx
+    image: nginx:latest
     ports:
-      - 81:80
+      - 8080:80
     volumes:
       - .:/var/www/symfony
       - ./docker-compose/.data/nginx/logs/:/var/log/nginx
-    links:
+      - ./docker-compose/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
       - php

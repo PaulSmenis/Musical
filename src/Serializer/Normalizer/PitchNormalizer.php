@@ -4,13 +4,13 @@
 namespace App\Serializer\Normalizer;
 
 
-use App\Entities\Pitch;
+use App\Entity\Pitch;
 use JetBrains\PhpStorm\ArrayShape;
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Serializer\Exception\CircularReferenceException;
-use Symfony\Component\Serializer\Exception\ExceptionInterface;
-use Symfony\Component\Serializer\Exception\InvalidArgumentException;
 use Symfony\Component\Serializer\Exception\LogicException;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Symfony\Component\Serializer\Exception\InvalidArgumentException;
+use Symfony\Component\Serializer\Exception\CircularReferenceException;
 
 class PitchNormalizer implements NormalizerInterface
 {

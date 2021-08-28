@@ -2,19 +2,31 @@
 
 namespace App\Controller;
 
+use Throwable;
+use Exception;
 use App\Entity\Pitch;
 use App\Entity\Scale;
-use Exception;
+use App\Form\PitchType;
+use Swagger\Annotations as SWG;
+use Nelmio\ApiDocBundle\Annotation\Model;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Nelmio\ApiDocBundle\Annotation\Model;
-use Swagger\Annotations as SWG;
-use Throwable;
 
 /**
  * @Route("/api/structures")
+ * @SWG\Tag(name="Creation of pitches and pitch structures")
+ *
+ * @SWG\Response(
+ *     response=500,
+ *     description="Internal server error.",
+ *    @SWG\Items(
+ *        @SWG\Property(property="message", type="string", example="Pitch is out of range from below. Cannot be lower than C0."),
+ *        @SWG\Property(property="file", type="string", example="/var/www/symfony/src/Entity/Pitch.php"),
+ *        @SWG\Property(property="line", type="integer", example="278")
+ *    )
+ * )
  */
 class StructuresController extends AbstractController
 {
@@ -23,9 +35,26 @@ class StructuresController extends AbstractController
      *
      * Allowed octaves are 0-8 SPL.
      * Allowed accidentals are triple at max.
-     * Please note that 'natural' accidental is also a valid returning value.
+     * Please note that 'natural' accidental is also a valid parameter / returning value.
+     * Default value is random.
      *
      * @Route("/pitch", methods={"GET"})
+     *
+     * @SWG\Parameter(
+     *     name="data",
+     *     in="body",
+     *     description="Request data. Preferably JSON.",
+     *     required=false,
+     *     @SWG\Schema(
+     *         type="object",
+     *         @SWG\Items(
+     *             @SWG\Property(property="name", type="string", example="G"),
+     *             @SWG\Property(property="accidental", type="string", example="#"),
+     *             @SWG\Property(property="octave", type="integer", example=5)
+     *         )
+     *     )
+     * )
+     *
      * @SWG\Response(
      *     response=200,
      *     description="Some pitch has been generated and returned successfully.",
@@ -35,11 +64,19 @@ class StructuresController extends AbstractController
      *        @SWG\Property(property="octave", type="integer", example=5)
      *    )
      * )
-     * @SWG\Tag(name="Creation of pitches and pitch structures")
+     *
+     * @return Response
      */
     public function pitch(): Response
     {
-        return $this->json(new Pitch);
+        $pitch = new Pitch;
+        $form = $this->createForm(PitchType::class, $pitch);
+
+        if (!$form->isSubmitted() || !$form->isValid()) {
+            return $this->json($form->getErrors(), Response::HTTP_BAD_REQUEST);
+        }
+
+        return $this->json($pitch);
     }
 
     /**
@@ -48,6 +85,7 @@ class StructuresController extends AbstractController
      * Basically an array of pitches.
      *
      * @Route("/scale", methods={"GET"})
+     *
      * @SWG\Parameter(
      *     name="name",
      *     in="query",
@@ -86,7 +124,8 @@ class StructuresController extends AbstractController
      * Hence, pitch octaves are inverted based on pitch order and with regard to passed reference pitch octave value.
      * Set to major by default.",
      *     required=false
-     * ),
+     * )
+     *
      * @SWG\Response(
      *     response=200,
      *     description="Some structure (i.e. pitches array) has been created and returned successfully",
@@ -99,7 +138,7 @@ class StructuresController extends AbstractController
      *         )
      *     )
      * )
-     * @SWG\Tag(name="Creation of pitches and pitch structures")
+     *
      * @param Request $request
      * @return Response
      * @throws Exception
@@ -108,12 +147,12 @@ class StructuresController extends AbstractController
     {
         try {
             $pitch = new Pitch(
-                $request->get('name') ?? null,
-                $request->get('accidental') ?? null,
-                $request->get('octave') ?? null
+                $request->get('name'),
+                $request->get('accidental'),
+                $request->get('octave')
             );
         } catch (Throwable $e) {
-            return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return $this->json($e, Response::HTTP_BAD_REQUEST);
         }
 
         try {
@@ -123,7 +162,7 @@ class StructuresController extends AbstractController
                 $request->get('degree') ?? '1'
             );
         } catch (Throwable $e) {
-            return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return $this->json($e, Response::HTTP_BAD_REQUEST);
         }
 
         return $this->json($scale);

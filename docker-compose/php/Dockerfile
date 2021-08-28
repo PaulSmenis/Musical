@@ -11,7 +11,9 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libmcrypt-dev \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
-    && mkdir -p /var/www/symfony
+    && mkdir -p /var/www/symfony \
+    && pecl install xdebug \
+    && docker-php-ext-enable xdebug
 
 WORKDIR /var/www/symfony
 CMD ["php-fpm"]
