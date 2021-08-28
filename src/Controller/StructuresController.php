@@ -58,16 +58,7 @@ class StructuresController extends AbstractController
      * @SWG\Parameter(
      *     name="data",
      *     in="body",
-     *     description="Request data. Preferably JSON.",
-     *     required=false,
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Items(
-     *             @SWG\Property(property="name", type="string", example="G"),
-     *             @SWG\Property(property="accidental", type="string", example="#"),
-     *             @SWG\Property(property="octave", type="integer", example=5)
-     *         )
-     *     )
+     *     @SWG\Schema(ref=@Model(type=PitchType::class))
      * )
      *
      * @SWG\Response(

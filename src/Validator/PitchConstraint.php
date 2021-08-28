@@ -13,10 +13,10 @@ class PitchConstraint extends Constraint
     /**
      * @var string
      */
-    public string  $message = FormProcessingService::JSON_VALIDATION_ERROR_MESSAGE;
+    public $message = FormProcessingService::JSON_VALIDATION_ERROR_MESSAGE;
 
     /**
      * @var PitchDTO
      */
-    public PitchDTO $data;
+    public $data;
 }
