@@ -41,7 +41,7 @@ class StructuresController extends AbstractController
      */
     private $formProcessingService;
 
-    public function __construct(FormProcessingService $formProcessingService,) {
+    public function __construct(FormProcessingService $formProcessingService) {
         $this->formProcessingService = $formProcessingService;
     }
 
