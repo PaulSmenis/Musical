@@ -92,7 +92,8 @@ class Scale
         foreach ($scale as &$name) {
             $name = new Pitch(
                 $name,
-                'natural'
+                'natural',
+                4
             );
         }
 

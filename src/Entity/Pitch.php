@@ -7,6 +7,7 @@ use Exception;
 use OutOfBoundsException;
 use JetBrains\PhpStorm\Pure;
 use UnexpectedValueException;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Pitch class
@@ -20,19 +21,21 @@ class Pitch
     public const DIRECTIONS     = ['lower', 'raise'];
 
     /**
-     * Pitch name (e.g. G)
+     * Pitch name (e.g. G).
      * @var string $name
      */
     private string $name;
 
     /**
-     * Pitch accidental (e.g. #); Triples at max
+     * Pitch accidental (e.g. #); Triples at max.
+     *
      * @var string $accidental
      */
     private string $accidental;
 
     /**
-     * Pitch octave (e.g. 3); 0-8 are valid (SPN)
+     * Pitch octave (e.g. 3); 0-8 are valid (SPN).
+     *
      * @var int $octave
      */
     private int $octave;
@@ -41,6 +44,7 @@ class Pitch
      * Pitch constructor.
      *
      * If some value is not passed or is null, random is used.
+     * If name is 'default', F4 is returned.
      * Passing empty values results leads to producing random value (within given restrictions).
      * @param string|null $name
      * @param string|null $accidental
@@ -55,23 +59,27 @@ class Pitch
     {
         if (is_null($name)) {
             $this->name = $this::NAMES[array_rand($this::NAMES)];
+        } elseif ($name === 'default') {
+            $this->name = 'F';
+            $this->accidental = 'natural';
+            $this->octave = 4;
+            return;
         } else {
             $this->validateName($name);
             $this->name = $name;
         }
 
-        if (is_null($accidental)) {
-            $this->accidental = $this::ACCIDENTALS[array_rand($this::ACCIDENTALS)];
-        } else {
-            $this->validateAccidental($accidental);
-            $this->accidental = $accidental;
-        }
+        $needsCorrectionOnRandomAccidental = $accidental === null && $octave !== null;
+        $needsCorrectionOnRandomName = $accidental !== null && $octave !== null && $name === null;
 
-        if (is_null($octave)) {
-            $this->octave = random_int(0, 8);
-        } else {
-            $this->validateOctave($octave);
-            $this->octave = $octave;
+        $this->setAccidental($accidental, true);
+        $this->setOctave($octave, true);
+
+        if ($needsCorrectionOnRandomAccidental) {
+            $this->modifyAccidentalToNotExceedRange();
+        }
+        if ($needsCorrectionOnRandomName) {
+            $this->modifyNameToNotExceedRange();
         }
 
         $this->validateRange();
@@ -98,15 +106,19 @@ class Pitch
     }
 
     /**
-     * @param string $name
-     * @throws UnexpectedValueException
+     * @param string|null $name
+     * @throws OutOfBoundsException|UnexpectedValueException
      */
-    public function setName(string $name): void
+    public function setName(?string $name): void
     {
-        $this->validateName($name);
-        $this->name = $name;
-
-        $this->validateRange();
+        if (is_null($name)) {
+            $this->name = $this::NAMES[array_rand($this::NAMES)];
+            $this->modifyNameToNotExceedRange();
+        } else {
+            $this->validateName($name);
+            $this->name = $name;
+            $this->validateRange();
+        }
     }
 
     /**
@@ -118,15 +130,22 @@ class Pitch
     }
 
     /**
-     * @param string $accidental
-     * @throws UnexpectedValueException
+     * @param string|null $accidental
+     * @param bool $avoidValidation
+     * @throws OutOfBoundsException|UnexpectedValueException
      */
-    public function setAccidental(string $accidental): void
+    public function setAccidental(?string $accidental, bool $avoidValidation = false): void
     {
-        $this->validateAccidental($accidental);
-        $this->accidental = $accidental;
-
-        $this->validateRange();
+        if (is_null($accidental)) {
+            $this->accidental = $this::ACCIDENTALS[array_rand($this::ACCIDENTALS)];
+            $this->modifyAccidentalToNotExceedRange();
+        } else {
+            $this->validateAccidental($accidental);
+            $this->accidental = $accidental;
+            if (!$avoidValidation) {
+                $this->validateRange();
+            }
+        }
     }
 
     /**
@@ -138,19 +157,26 @@ class Pitch
     }
 
     /**
-     * @param int $octave
-     * @throws UnexpectedValueException
+     * @param int|null $octave
+     * @param bool $avoidValidation
+     * @throws OutOfBoundsException|UnexpectedValueException
      */
-    public function setOctave(int $octave): void
+    public function setOctave(?int $octave, bool $avoidValidation = false): void
     {
-        $this->validateOctave($octave);
-        $this->octave = $octave;
-
-        $this->validateRange();
+        if (is_null($octave)) {
+            $this->octave = random_int(0, 8);
+            $this->modifyOctaveToNotExceedRange();
+        } else {
+            $this->validateOctave($octave);
+            $this->octave = $octave;
+            if (!$avoidValidation) {
+                $this->validateRange();
+            }
+        }
     }
 
     /**
-     * Raises or lowers given pitch up/down a halfstep (pass direction as either 'raise' or 'lower')
+     * Raises or lowers given pitch up/down a halfstep (pass direction as either 'raise' or 'lower').
      *
      * @param string $direction
      * @param int|null $halfsteps
@@ -193,7 +219,7 @@ class Pitch
     }
 
     /**
-     * Raises or lowers given pitch up/down an octave (pass direction as either 'raise' or 'lower')
+     * Raises or lowers given pitch up/down an octave (pass direction as either 'raise' or 'lower').
      *
      * @param string $direction
      * @param int|null $octaves
@@ -271,12 +297,56 @@ class Pitch
      */
     private function validateRange(): void
     {
-        if (!$this->octave) {
-            if ($this->name === 'C' && in_array($this->accidental, $this::ACCIDENTALS_DOWNWARDS)
-                ||
-                $this->name === 'D' && $this->accidental === 'bbb') {
-                throw new OutOfBoundsException('Pitch is out of range from below. Cannot be lower than C0.');
+        if ($this->ifExceedsRangeFromBelow()) {
+            throw new OutOfBoundsException('Pitch is out of range from below. Cannot be lower than C0.');
+        }
+    }
+
+    /**
+     * Checks if combination of given pitch name, octave and accidental puts it below reasonable limit (which is C0).
+     *
+     * @return bool
+     */
+    private function ifExceedsRangeFromBelow(): bool
+    {
+        if (!isset($this->octave) || $this->octave !== 0) {
+            return false;
+        }
+        if ($this->name === 'C' && in_array($this->accidental, $this::ACCIDENTALS_DOWNWARDS)
+            ||
+            $this->name === 'D' && $this->accidental === 'bbb') {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private function modifyAccidentalToNotExceedRange(): void
+    {
+        if ($this->ifExceedsRangeFromBelow()) {
+            if ($this->name === 'D') {
+                $this->moveHalfstep('raise');
+            } elseif ($this->name === 'C') {
+                $this->setAccidental('natural');
             }
+        }
+    }
+
+    private function modifyNameToNotExceedRange(): void
+    {
+        if ($this->ifExceedsRangeFromBelow()) {
+            if ($this->name === 'C' && $this->accidental !== 'bbb') {
+                $this->setName('D');
+            } elseif ($this->name === 'D' || $this->name === 'C' && $this->accidental === 'bbb') {
+                $this->setName('E');
+            }
+        }
+    }
+
+    private function modifyOctaveToNotExceedRange(): void
+    {
+        if ($this->ifExceedsRangeFromBelow()) {
+            $this->octave = 1;
         }
     }
 }

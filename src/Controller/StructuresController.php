@@ -2,17 +2,23 @@
 
 namespace App\Controller;
 
+use App\Service\FormProcessingService;
+use Symfony\Component\Form\Form;
 use Throwable;
 use Exception;
 use App\Entity\Pitch;
 use App\Entity\Scale;
 use App\Form\PitchType;
+use App\DTO\PitchDTO;
 use Swagger\Annotations as SWG;
+use Symfony\Component\Form\AbstractType;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 /**
  * @Route("/api/structures")
@@ -30,6 +36,15 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  */
 class StructuresController extends AbstractController
 {
+    /**
+     * @var FormProcessingService
+     */
+    private $formProcessingService;
+
+    public function __construct(FormProcessingService $formProcessingService,) {
+        $this->formProcessingService = $formProcessingService;
+    }
+
     /**
      * Returns randomly generated pitch
      *
@@ -66,17 +81,22 @@ class StructuresController extends AbstractController
      * )
      *
      * @return Response
+     * @throws Exception
      */
-    public function pitch(): Response
+    public function pitch(Request $request): Response
     {
-        $pitch = new Pitch;
-        $form = $this->createForm(PitchType::class, $pitch);
-
-        if (!$form->isSubmitted() || !$form->isValid()) {
-            return $this->json($form->getErrors(), Response::HTTP_BAD_REQUEST);
-        }
-
-        return $this->json($pitch);
+        return $this->formProcessingService->processJsonForm(
+            $request,
+            PitchType::class,
+            new PitchDTO,
+            function (PitchDTO $pitchTypeDTO) {
+                return new Pitch(
+                    $pitchTypeDTO->getName(),
+                    $pitchTypeDTO->getAccidental(),
+                    $pitchTypeDTO->getOctave()
+                );
+            }
+        );
     }
 
     /**
