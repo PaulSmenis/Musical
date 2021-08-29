@@ -76,18 +76,7 @@ class StructuresController extends AbstractController
      */
     public function pitch(Request $request): Response
     {
-        return $this->formProcessingService->processJsonForm(
-            $request,
-            PitchType::class,
-            new PitchDTO,
-            function (PitchDTO $pitchTypeDTO) {
-                return new Pitch(
-                    $pitchTypeDTO->getName(),
-                    $pitchTypeDTO->getAccidental(),
-                    $pitchTypeDTO->getOctave()
-                );
-            }
-        );
+        return $this->formProcessingService->processJsonForm($request, null, Pitch::class);
     }
 
     /**
