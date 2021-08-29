@@ -2,6 +2,9 @@
 
 namespace App\Controller;
 
+use App\DTO\ScaleDTO;
+use App\Form\DataTransformer\PitchToDTODataTransformer;
+use App\Form\ScaleType;
 use App\Service\FormProcessingService;
 use Symfony\Component\Form\Form;
 use Throwable;
@@ -98,43 +101,9 @@ class StructuresController extends AbstractController
      * @Route("/scale", methods={"GET"})
      *
      * @SWG\Parameter(
-     *     name="name",
-     *     in="query",
-     *     type="string",
-     *     description="Scale or chord tonic name. Set to random by default.",
-     *     required=false
-     * ),
-     * @SWG\Parameter(
-     *     name="accidental",
-     *     in="query",
-     *     type="string",
-     *     description="Tonic accidental. Set to random by default.",
-     *     required=false
-     * ),
-     * @SWG\Parameter(
-     *     name="octave",
-     *     in="query",
-     *     type="integer",
-     *     description="Tonic octave. Set to random by default.",
-     *     required=false
-     * ),
-     * @SWG\Parameter(
-     *     name="degree",
-     *     in="query",
-     *     type="string",
-     *     description="Which degree of a given structure tonic is (e.g. b2). Set to 1 by default (i.e. the tonic).",
-     *     required=false
-     * ),
-     * @SWG\Parameter(
-     *     name="formula",
-     *     in="query",
-     *     type="string",
-     *     description="
-     * Can be set via common name (i.e. 'harmonic minor') but you can pass string of the form '3,1,b5' as well.
-     * Octaves are set according to the formula and common sense.
-     * Hence, pitch octaves are inverted based on pitch order and with regard to passed reference pitch octave value.
-     * Set to major by default.",
-     *     required=false
+     *     name="data",
+     *     in="body",
+     *     @SWG\Schema(ref=@Model(type=ScaleType::class))
      * )
      *
      * @SWG\Response(
@@ -156,26 +125,17 @@ class StructuresController extends AbstractController
      */
     public function scale(Request $request): Response
     {
-        try {
-            $pitch = new Pitch(
-                $request->get('name'),
-                $request->get('accidental'),
-                $request->get('octave')
-            );
-        } catch (Throwable $e) {
-            return $this->json($e, Response::HTTP_BAD_REQUEST);
-        }
-
-        try {
-            $scale = new Scale(
-                $pitch,
-                $request->get('formula') ?? 'major',
-                $request->get('degree') ?? '1'
-            );
-        } catch (Throwable $e) {
-            return $this->json($e, Response::HTTP_BAD_REQUEST);
-        }
-
-        return $this->json($scale);
+        return $this->formProcessingService->processJsonForm(
+            $request,
+            ScaleType::class,
+            new ScaleDTO,
+            function (ScaleDTO $scaleDTO) {
+                return new Scale(
+                    $scaleDTO->getPitch(),
+                    $scaleDTO->getFormula(),
+                    $scaleDTO->getDegree()
+                );
+            }
+        );
     }
 }

@@ -4,8 +4,9 @@
 namespace App\Service;
 
 
-use App\Form\PitchType;
+use App\Form\ScaleType;
 use Throwable;
+use App\Form\PitchType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -13,8 +14,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class FormProcessingService extends AbstractController
 {
-    public const JSON_VALIDATION_ERROR_MESSAGE = 'JSON data was not sent correctly; check the documentation.';
-
     /**
      * Input variants:
      * Request + data object --> Will create instance based on DataObject (class only can be passed) with JSON data put into its constructor
@@ -44,22 +43,20 @@ class FormProcessingService extends AbstractController
             $json = [];
         } else {
             $json = json_decode($content, true);
-        }
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return $this->json(['Errors' => ['Invalid JSON syntax.']], Response::HTTP_BAD_REQUEST);
+            if (json_last_error() !== JSON_ERROR_NONE && $json !== null) {
+                return $this->json(['Errors' => ['Invalid JSON syntax.']], Response::HTTP_BAD_REQUEST);
+            }
         }
 
         if ($formType) {
-            $form = $this->createForm($formType, $dataObject);
+            $form = $this->createForm($formType, is_string($dataObject) ? null : $dataObject);
 
             try {
-                $form->submit($json, $clearMissing);
+                $form->submit($json ?? $request, $clearMissing);
             } catch (Throwable $e) {
                 return $this->json(['Errors' => [$e->getMessage()]], Response::HTTP_BAD_REQUEST);
             }
 
-            $form->handleRequest($request);
 
             if ($form->isSubmitted() && !$form->isValid()) {
                 $errors = [];
@@ -70,10 +67,14 @@ class FormProcessingService extends AbstractController
                 };
                 return $this->json(['Errors' => $errors], Response::HTTP_BAD_REQUEST);
             } else {
-                $dataObject = $dataObject ?: $form->getData();
-            }
+                if (is_string($dataObject)) {
+                    $dataObject = new $dataObject($form->getData());
+                } else {
+                    $dataObject = $dataObject ?: $form->getData();
+                }
 
-            $dataObject = $handler ? $handler($dataObject) : $dataObject;
+                $dataObject = $handler ? $handler($dataObject) : $dataObject;
+            }
         } else {
             if ($dataObject) {
                 $dataObject = new $dataObject(...$json);
@@ -93,6 +94,8 @@ class FormProcessingService extends AbstractController
     }
 
     /**
+     * Hints affected object in "This value..." form constraint error messages depending on form
+     *
      * @param string $message
      * @param string $formType
      * @return string
@@ -102,6 +105,7 @@ class FormProcessingService extends AbstractController
         if (preg_match('/^This value.*/', $message)) {
             switch($formType) {
                 case PitchType::class:
+                case ScaleType::class:
                     return preg_replace('/This value/', 'Octave', $message);
                 default:
                     return $message;

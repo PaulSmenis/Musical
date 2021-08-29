@@ -6,7 +6,7 @@ namespace App\Form;
 
 use App\DTO\PitchDTO;
 use App\Entity\Pitch;
-use App\Validator\PitchConstraint;
+use App\Form\DataTransformer\PitchToDTODataTransformer;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -21,37 +21,38 @@ class PitchType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
+            ->setMethod('GET')
             ->add('name', TextType::class, [
+                'documentation' => [
+                    'description' => 'Pitch name',
+                    'example' => 'C'
+                ],
                 'constraints' => [
                     new Choice([
                         'choices' => Pitch::NAMES,
                         'message' => 'Wrong pitch passed. Should be one of: ' . implode(', ', Pitch::NAMES)
                     ])
-                ],
-                'documentation' => [
-                    'description' => 'Pitch name',
-                    'example' => 'C'
                 ]
             ])
             ->add('accidental', TextType::class, [
+                'documentation' => [
+                    'description' => 'Pitch accidental',
+                    'example' => '##'
+                ],
                 'constraints' => [
                     new Choice([
                         'choices' => Pitch::ACCIDENTALS,
                         'message' => 'Wrong accidental passed. Should be one of: ' . implode(', ', Pitch::ACCIDENTALS)
                     ])
-                ],
-                'documentation' => [
-                    'description' => 'Pitch accidental',
-                    'example' => '##'
                 ]
             ])
             ->add('octave', IntegerType::class, [
-                'constraints' => [
-                    new Range(['min' => 0, 'max' => 8])
-                ],
                 'documentation' => [
                     'description' => 'Pitch octave (SPL)',
                     'example' => '4'
+                ],
+                'constraints' => [
+                    new Range(['min' => 0, 'max' => 8])
                 ]
             ])
         ;

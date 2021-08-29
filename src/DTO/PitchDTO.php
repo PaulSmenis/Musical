@@ -21,6 +21,17 @@ class PitchDTO
      */
     private $octave;
 
+    public function __construct(
+        ?string $name = null,
+        ?string $accidental = null,
+        ?string $octave = null
+    )
+    {
+        $this->name = null;
+        $this->accidental = null;
+        $this->octave = null;
+    }
+
     /**
      * @return string|null
      */

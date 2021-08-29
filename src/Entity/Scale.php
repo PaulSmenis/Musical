@@ -4,6 +4,7 @@
 namespace App\Entity;
 
 use Exception;
+use App\DTO\PitchDTO;
 use App\Helper\ArrayHelper;
 use JetBrains\PhpStorm\Pure;
 use UnexpectedValueException;
@@ -13,7 +14,7 @@ use UnexpectedValueException;
  */
 class Scale
 {
-    const COMMON_SCALES = [
+    public const COMMON_SCALES = [
         'lydian'            => ['1', '2', '3', '#4', '5', '6', '7'],
         'major'             => ['1', '2', '3', '4', '5', '6', '7'],
         'mixolydian'        => ['1', '2', '3', '4', '5', '6', 'b7'],
@@ -36,14 +37,14 @@ class Scale
      *
      * @param Pitch|null $pitch
      * Some pitch you pass as a reference to build other pitches (usually it's the tonic). Random by default.
-     * @param array|string|null $scale_formula
+     * @param string|null $scale_formula
      * Scale formula contains either strings which represent scale degrees -- e.g. 'b3,5,1'
      * or a string with one of generic scale formulas (see COMMON_DIATONIC_SCALES). Major by default.
      * @param string|null $scale_degree_formulaic
      * Denotes which scale degree you've passed as a pitch (e.g. 'b3'). Tonic by default.
      * @throws Exception
      */
-    public function __construct(?Pitch $pitch, array|string|null $scale_formula = 'major', ?string $scale_degree_formulaic = '1')
+    public function __construct(?Pitch $pitch, string|null $scale_formula = 'major', ?string $scale_degree_formulaic = '1')
     {
         if (is_null($pitch)) {
             $pitch = new Pitch;

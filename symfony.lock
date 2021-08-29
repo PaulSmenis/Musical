@@ -72,6 +72,9 @@
             "config/packages/sensio_framework_extra.yaml"
         ]
     },
+    "symfony-bundles/json-request-bundle": {
+        "version": "4.0.5"
+    },
     "symfony/asset": {
         "version": "v5.1.7"
     },
