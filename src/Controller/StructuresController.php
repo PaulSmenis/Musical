@@ -24,16 +24,20 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 /**
- * @Route("/api/structures")
+ * @Route("/api/structure")
  * @SWG\Tag(name="Creation of pitches and pitch structures")
  *
  * @SWG\Response(
- *     response=500,
+ *     response=400,
  *     description="Internal server error.",
  *    @SWG\Items(
- *        @SWG\Property(property="message", type="string", example="Pitch is out of range from below. Cannot be lower than C0."),
- *        @SWG\Property(property="file", type="string", example="/var/www/symfony/src/Entity/Pitch.php"),
- *        @SWG\Property(property="line", type="integer", example="278")
+ *         @SWG\Property(
+ *              property="Errors",
+ *              type="array",
+ *              @SWG\Items(
+ *                  type="string"
+ *              )
+ *         )
  *    )
  * )
  */
@@ -61,7 +65,7 @@ class StructuresController extends AbstractController
      * @SWG\Parameter(
      *     name="data",
      *     in="body",
-     *     @SWG\Schema(ref=@Model(type=PitchType::class))
+     *     @SWG\Schema(ref=@Model(type=PitchDTO::class))
      * )
      *
      * @SWG\Response(
@@ -103,7 +107,7 @@ class StructuresController extends AbstractController
      * @SWG\Parameter(
      *     name="data",
      *     in="body",
-     *     @SWG\Schema(ref=@Model(type=ScaleType::class))
+     *     @SWG\Schema(ref=@Model(type=ScaleDTO::class))
      * )
      *
      * @SWG\Response(

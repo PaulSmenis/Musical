@@ -37,14 +37,14 @@ class Scale
      *
      * @param Pitch|null $pitch
      * Some pitch you pass as a reference to build other pitches (usually it's the tonic). Random by default.
-     * @param string|null $scale_formula
+     * @param array|string|null $scale_formula
      * Scale formula contains either strings which represent scale degrees -- e.g. 'b3,5,1'
      * or a string with one of generic scale formulas (see COMMON_DIATONIC_SCALES). Major by default.
      * @param string|null $scale_degree_formulaic
      * Denotes which scale degree you've passed as a pitch (e.g. 'b3'). Tonic by default.
      * @throws Exception
      */
-    public function __construct(?Pitch $pitch, string|null $scale_formula = 'major', ?string $scale_degree_formulaic = '1')
+    public function __construct(?Pitch $pitch, array|string|null $scale_formula = 'major', ?string $scale_degree_formulaic = '1')
     {
         if (is_null($pitch)) {
             $pitch = new Pitch;
@@ -78,7 +78,7 @@ class Scale
             if ($check) {
                 $finish = array_search($scale_degree, $modes);
             } else {
-                throw new UnexpectedValueException('Passed value (either formula or degree) is invalid. Check on documentation.');
+                throw new UnexpectedValueException('Passed value (either formula or degree) is invalid.');
             }
             return [$scale_degree, $f_acc, $finish];
         };
