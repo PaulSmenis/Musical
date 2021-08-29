@@ -23,8 +23,10 @@ class PitchType extends AbstractType
         $builder
             ->add('name', TextType::class, [
                 'constraints' => [
-                    new Choice(['choices' => Pitch::NAMES, 'message' => 'Wrong pitch passed.']),
-                    new PitchConstraint(['data' => $builder->getForm()->getData()])
+                    new Choice([
+                        'choices' => Pitch::NAMES,
+                        'message' => 'Wrong pitch passed. Should be one of: ' . implode(', ', Pitch::NAMES)
+                    ])
                 ],
                 'documentation' => [
                     'description' => 'Pitch name',
@@ -33,7 +35,10 @@ class PitchType extends AbstractType
             ])
             ->add('accidental', TextType::class, [
                 'constraints' => [
-                    new Choice(['choices' => Pitch::ACCIDENTALS, 'message' => 'Wrong accidental passed.'])
+                    new Choice([
+                        'choices' => Pitch::ACCIDENTALS,
+                        'message' => 'Wrong accidental passed. Should be one of: ' . implode(', ', Pitch::ACCIDENTALS)
+                    ])
                 ],
                 'documentation' => [
                     'description' => 'Pitch accidental',

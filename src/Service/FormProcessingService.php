@@ -4,6 +4,7 @@
 namespace App\Service;
 
 
+use App\Form\PitchType;
 use Throwable;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -46,7 +47,7 @@ class FormProcessingService extends AbstractController
         }
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            return $this->json(['Error' => 'Invalid JSON syntax.'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['Errors' => ['Invalid JSON syntax.']], Response::HTTP_BAD_REQUEST);
         }
 
         if ($formType) {
@@ -55,13 +56,19 @@ class FormProcessingService extends AbstractController
             try {
                 $form->submit($json, $clearMissing);
             } catch (Throwable $e) {
-                return $this->json(['Error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+                return $this->json(['Errors' => [$e->getMessage()]], Response::HTTP_BAD_REQUEST);
             }
 
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && !$form->isValid()) {
-                return $this->json(['Errors' => FormProcessingService::JSON_VALIDATION_ERROR_MESSAGE], Response::HTTP_BAD_REQUEST);
+                $errors = [];
+                foreach($form->getErrors(true) as $error) {
+                    $message = $error->getMessage();
+                    $message = $this->tideUpErrorMessage($message, $formType);
+                    $errors[] = $message;
+                };
+                return $this->json(['Errors' => $errors], Response::HTTP_BAD_REQUEST);
             } else {
                 $dataObject = $dataObject ?: $form->getData();
             }
@@ -73,7 +80,7 @@ class FormProcessingService extends AbstractController
 
                 $dataObject = $handler ? $handler($dataObject) : $dataObject;
             } else {
-                $dataObject = $handler ? $handler($request) : ['Error' => 'No form/data/handler has been passed to the processor.'];
+                $dataObject = $handler ? $handler($request) : ['Errors' => ['No form/data/handler has been passed to the processor.']];
                 // If nothing besides request was passed, nothing would be processed
             }
         }
@@ -83,5 +90,23 @@ class FormProcessingService extends AbstractController
         } else {
             return $dataObject;
         }
+    }
+
+    /**
+     * @param string $message
+     * @param string $formType
+     * @return string
+     */
+    private function tideUpErrorMessage(string $message, string $formType): string
+    {
+        if (preg_match('/^This value.*/', $message)) {
+            switch($formType) {
+                case PitchType::class:
+                    return preg_replace('/This value/', 'Octave', $message);
+                default:
+                    return $message;
+            }
+        }
+        return $message;
     }
 }
