@@ -44,7 +44,7 @@ class FormProcessingService extends AbstractController
         } else {
             $json = json_decode($content, true);
             if (json_last_error() !== JSON_ERROR_NONE && $json !== null) {
-                return $this->json(['Errors' => ['Invalid JSON syntax.']], Response::HTTP_BAD_REQUEST);
+                return $this->json(['errors' => ['Invalid JSON syntax.']], Response::HTTP_BAD_REQUEST);
             }
         }
 
@@ -54,7 +54,7 @@ class FormProcessingService extends AbstractController
             try {
                 $form->submit($json ?? $request, $clearMissing);
             } catch (Throwable $e) {
-                return $this->json(['Errors' => [$e->getMessage()]], Response::HTTP_BAD_REQUEST);
+                return $this->json(['errors' => [$e->getMessage()]], Response::HTTP_BAD_REQUEST);
             }
 
 
@@ -65,7 +65,7 @@ class FormProcessingService extends AbstractController
                     $message = $this->tideUpErrorMessage($message, $formType);
                     $errors[] = $message;
                 };
-                return $this->json(['Errors' => $errors], Response::HTTP_BAD_REQUEST);
+                return $this->json(['errors' => $errors], Response::HTTP_BAD_REQUEST);
             } else {
                 if (is_string($dataObject)) {
                     $dataObject = new $dataObject($form->getData());
@@ -81,7 +81,7 @@ class FormProcessingService extends AbstractController
 
                 $dataObject = $handler ? $handler($dataObject) : $dataObject;
             } else {
-                $dataObject = $handler ? $handler($request) : ['Errors' => ['No form/data/handler has been passed to the processor.']];
+                $dataObject = $handler ? $handler($request) : ['errors' => ['No form/data/handler has been passed to the processor.']];
                 // If nothing besides request was passed, nothing would be processed
             }
         }

@@ -2,26 +2,20 @@
 
 namespace App\Controller;
 
-use App\DTO\ScaleDTO;
-use App\Form\DataTransformer\PitchToDTODataTransformer;
-use App\Form\ScaleType;
-use App\Service\FormProcessingService;
-use Symfony\Component\Form\Form;
-use Throwable;
 use Exception;
+use App\DTO\ScaleDTO;
 use App\Entity\Pitch;
 use App\Entity\Scale;
-use App\Form\PitchType;
 use App\DTO\PitchDTO;
+use App\Form\PitchType;
+use App\Form\ScaleType;
 use Swagger\Annotations as SWG;
-use Symfony\Component\Form\AbstractType;
+use App\Service\FormProcessingService;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 /**
  * @Route("/api/structure")
@@ -32,7 +26,7 @@ use Symfony\Component\HttpFoundation\Exception\BadRequestException;
  *     description="Internal server error.",
  *    @SWG\Items(
  *         @SWG\Property(
- *              property="Errors",
+ *              property="errors",
  *              type="array",
  *              @SWG\Items(
  *                  type="string"
