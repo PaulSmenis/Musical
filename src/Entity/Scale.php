@@ -4,7 +4,6 @@
 namespace App\Entity;
 
 use Exception;
-use App\DTO\PitchDTO;
 use App\Helper\ArrayHelper;
 use JetBrains\PhpStorm\Pure;
 use UnexpectedValueException;
