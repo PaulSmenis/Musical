@@ -3,15 +3,11 @@
 namespace App\Controller;
 
 use Exception;
-use App\DTO\ScaleDTO;
 use App\Entity\Pitch;
 use App\Entity\Scale;
-use App\DTO\PitchDTO;
-use App\Form\PitchType;
-use App\Form\ScaleType;
 use Swagger\Annotations as SWG;
-use App\Service\FormProcessingService;
 use Nelmio\ApiDocBundle\Annotation\Model;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -23,31 +19,20 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  *
  * @SWG\Response(
  *     response=400,
- *     description="Internal server error.",
- *    @SWG\Items(
+ *     description="Bad request.",
+ *     @SWG\Items(
  *         @SWG\Property(
- *              property="errors",
- *              type="array",
- *              @SWG\Items(
- *                  type="string"
- *              )
+ *             property="message",
+ *             type="string",
+ *             example="Foo."
  *         )
- *    )
+ *     )
  * )
  */
 class StructuresController extends AbstractController
 {
     /**
-     * @var FormProcessingService
-     */
-    private $formProcessingService;
-
-    public function __construct(FormProcessingService $formProcessingService) {
-        $this->formProcessingService = $formProcessingService;
-    }
-
-    /**
-     * Returns randomly generated pitch
+     * Returns randomly generated pitch.
      *
      * Allowed octaves are 0-8 SPL.
      * Allowed accidentals are triple at max.
@@ -59,17 +44,21 @@ class StructuresController extends AbstractController
      * @SWG\Parameter(
      *     name="data",
      *     in="body",
-     *     @SWG\Schema(ref=@Model(type=PitchDTO::class))
+     *     @SWG\Schema(
+     *         @SWG\Property(property="name", type="string", example="G"),
+     *         @SWG\Property(property="accidental", type="string", example="#"),
+     *         @SWG\Property(property="octave", type="integer", example=5)
+     *     )
      * )
      *
      * @SWG\Response(
      *     response=200,
      *     description="Some pitch has been generated and returned successfully.",
-     *    @SWG\Items(
-     *        @SWG\Property(property="name", type="string", example="G"),
-     *        @SWG\Property(property="accidental", type="string", example="#"),
-     *        @SWG\Property(property="octave", type="integer", example=5)
-     *    )
+     *     @SWG\Items(
+     *         @SWG\Property(property="name", type="string", example="G"),
+     *         @SWG\Property(property="accidental", type="string", example="#"),
+     *         @SWG\Property(property="octave", type="integer", example=5)
+     *     )
      * )
      *
      * @return Response
@@ -77,22 +66,30 @@ class StructuresController extends AbstractController
      */
     public function pitch(Request $request): Response
     {
-        return $this->formProcessingService->processJsonForm(
-            $request,
-            PitchType::class,
-            new PitchDTO,
-            function (PitchDTO $pitchDTO) {
-                return new Pitch(
-                    $pitchDTO->getName(),
-                    $pitchDTO->getAccidental(),
-                    $pitchDTO->getOctave()
-                );
-            }
-        );
+        $name = $request->get('name');
+        $accidental = $request->get('accidental');
+        $octave = $request->get('octave');
+
+        $pitchDataTypeValidation = $this->validatePitchDataTypes($name, $accidental, $octave);
+
+        if ($pitchDataTypeValidation !== null) {
+            return $pitchDataTypeValidation;
+        }
+
+        try {
+            $pitch = new Pitch(
+                $name,
+                $accidental,
+                $octave
+            );
+        } catch (\Throwable $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+        return $this->json($pitch, Response::HTTP_OK);
     }
 
     /**
-     * Generates and returns a certain pitch structure (interval, chord, scale) built on tonic
+     * Generates and returns a certain pitch structure (interval, chord, scale) built on tonic.
      *
      * Basically an array of pitches.
      *
@@ -101,17 +98,23 @@ class StructuresController extends AbstractController
      * @SWG\Parameter(
      *     name="data",
      *     in="body",
-     *     @SWG\Schema(ref=@Model(type=ScaleDTO::class))
+     *     @SWG\Schema(
+     *         @SWG\Property(property="name", type="string", example="G"),
+     *         @SWG\Property(property="accidental", type="string", example="#"),
+     *         @SWG\Property(property="octave", type="integer", example=5),
+     *         @SWG\Property(property="formula", type="string", example="minor"),
+     *         @SWG\Property(property="degree", type="integer", example=5)
+     *     )
      * )
      *
      * @SWG\Response(
      *     response=200,
-     *     description="Some structure (i.e. pitches array) has been created and returned successfully",
+     *     description="Some structure (i.e. pitches array) has been created and returned successfully.",
      *     @SWG\Property(property="answer", type="array",
-     *         @SWG\Items(
-     *             @SWG\Property(property="name", type="string", example="G"),
-     *             @SWG\Property(property="accidental", type="string", example="#"),
-     *             @SWG\Property(property="octave", type="integer", example=5)
+     *             @SWG\Items(
+     *                 @SWG\Property(property="name", type="string", example="G"),
+     *                 @SWG\Property(property="accidental", type="string", example="#"),
+     *                 @SWG\Property(property="octave", type="integer", example=5)
      *             )
      *         )
      *     )
@@ -123,17 +126,54 @@ class StructuresController extends AbstractController
      */
     public function scale(Request $request): Response
     {
-        return $this->formProcessingService->processJsonForm(
-            $request,
-            ScaleType::class,
-            new ScaleDTO,
-            function (ScaleDTO $scaleDTO) {
-                return new Scale(
-                    $scaleDTO->getPitch(),
-                    $scaleDTO->getFormula(),
-                    $scaleDTO->getDegree()
-                );
+        try {
+            $name = $request->get('name');
+            $accidental = $request->get('accidental');
+            $octave = $request->get('octave');
+
+            $pitchDataTypeValidation = $this->validatePitchDataTypes($name, $accidental, $octave);
+            if ($pitchDataTypeValidation) {
+                return $pitchDataTypeValidation;
             }
-        );
+
+            $pitch = new Pitch(
+                $name,
+                $accidental,
+                $octave
+            );
+        } catch (\Throwable $e) {
+            return $this->json(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $scale = new Scale(
+                $pitch,
+                $request->get('formula'),
+                $request->get('degree'),
+            );
+        } catch (\Throwable $e) {
+            return $this->json(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+        return $this->json($scale, Response::HTTP_OK);
+    }
+
+    /**
+     * Validates data types of pitch parameters passed in the request.
+     *
+     * @param $name
+     * @param $accidental
+     * @param $octave
+     * @return JsonResponse|null
+     */
+    private function validatePitchDataTypes($name, $accidental, $octave): ?JsonResponse
+    {
+        if (!is_null($name) && !is_string($name)) {
+            return $this->json(['error' => 'Incorrect name data type (available: null|string).'], Response::HTTP_BAD_REQUEST);
+        } elseif (!is_null($accidental) && !is_string($accidental)) {
+            return $this->json(['error' => 'Incorrect accidental data type (available: null|string).'], Response::HTTP_BAD_REQUEST);
+        } elseif (!is_null($octave) && !is_int($octave)) {
+            return $this->json(['error' => 'Incorrect octave data type (available: null|int).'], Response::HTTP_BAD_REQUEST);
+        }
+        return null;
     }
 }
