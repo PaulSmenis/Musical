@@ -7,10 +7,10 @@ use App\Entity\Pitch;
 use App\Entity\Scale;
 use Swagger\Annotations as SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 /**
@@ -112,7 +112,12 @@ class StructuresController extends AbstractController
      */
     public function scale(Request $request): Response
     {
+        $name = $request->get('name');
+        $accidental = $request->get('accidental');
+        $octave = $request->get('octave');
+
         $pitch = $this->processPitch($request);
+
         if (!($pitch instanceof Pitch)) {
             return $pitch;
         }
@@ -126,11 +131,23 @@ class StructuresController extends AbstractController
                 return $scaleDataTypesValidation;
             }
 
-            $scale = new Scale(
-                $pitch,
-                $formula,
-                $degree,
-            );
+            scale:
+            try {
+                $scale = new Scale(
+                    $pitch,
+                    $formula,
+                    $degree,
+                );
+            } catch (\Throwable $e) {
+                if ($octave === null || $accidental === null) {
+                    // This prevents value overflow exception if octave or accidental is random
+                    // (####, 9 octave, etc.) and tries to create pitch and scale again.
+                    $pitch = new Pitch($name, $accidental, $octave);
+                    goto scale;
+                } else {
+                    throw new Exception($e->getMessage());
+                }
+            }
         } catch (\Throwable $e) {
             return $this->json([
                 'message' => [
