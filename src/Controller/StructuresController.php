@@ -66,26 +66,12 @@ class StructuresController extends AbstractController
      */
     public function pitch(Request $request): Response
     {
-        $name = $request->get('name');
-        $accidental = $request->get('accidental');
-        $octave = $request->get('octave');
-
-        $pitchDataTypeValidation = $this->validatePitchDataTypes($name, $accidental, $octave);
-
-        if ($pitchDataTypeValidation !== null) {
-            return $pitchDataTypeValidation;
+        $pitch = $this->processPitch($request);
+        if ($pitch instanceof Pitch) {
+            return $this->json($pitch, Response::HTTP_OK);
+        } else {
+            return $pitch;
         }
-
-        try {
-            $pitch = new Pitch(
-                $name,
-                $accidental,
-                $octave
-            );
-        } catch (\Throwable $e) {
-            return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
-        }
-        return $this->json($pitch, Response::HTTP_OK);
     }
 
     /**
@@ -126,23 +112,9 @@ class StructuresController extends AbstractController
      */
     public function scale(Request $request): Response
     {
-        try {
-            $name = $request->get('name');
-            $accidental = $request->get('accidental');
-            $octave = $request->get('octave');
-
-            $pitchDataTypeValidation = $this->validatePitchDataTypes($name, $accidental, $octave);
-            if ($pitchDataTypeValidation) {
-                return $pitchDataTypeValidation;
-            }
-
-            $pitch = new Pitch(
-                $name,
-                $accidental,
-                $octave
-            );
-        } catch (\Throwable $e) {
-            return $this->json(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        $pitch = $this->processPitch($request);
+        if (!($pitch instanceof Pitch)) {
+            return $pitch;
         }
 
         try {
@@ -207,5 +179,29 @@ class StructuresController extends AbstractController
             return $this->json(['error' => 'Incorrect degree data type (available: null|int).'], Response::HTTP_BAD_REQUEST);
         }
         return null;
+    }
+
+    private function processPitch($request): JsonResponse|Pitch
+    {
+        $name = $request->get('name');
+        $accidental = $request->get('accidental');
+        $octave = $request->get('octave');
+
+        $pitchDataTypeValidation = $this->validatePitchDataTypes($name, $accidental, $octave);
+
+        if ($pitchDataTypeValidation !== null) {
+            return $pitchDataTypeValidation;
+        }
+
+        try {
+            $pitch = new Pitch(
+                $name,
+                $accidental,
+                $octave
+            );
+        } catch (\Throwable $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+        return $pitch;
     }
 }
