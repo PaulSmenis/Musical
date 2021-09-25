@@ -181,6 +181,12 @@ class StructuresController extends AbstractController
         return null;
     }
 
+    /**
+     * Extracts and validates pitch data from request and forms pitch object.
+     *
+     * @param $request
+     * @return JsonResponse|Pitch
+     */
     private function processPitch($request): JsonResponse|Pitch
     {
         $name = $request->get('name');
