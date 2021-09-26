@@ -13,6 +13,10 @@ use UnexpectedValueException;
  */
 class Scale
 {
+    public const ACCIDENTAL_EXCEPTION_MESSAGE = 'Passed parameters result in structure having exceeding accidentals.';
+
+    public const OCTAVE_EXCEPTION_MESSAGE = 'Because of the parameters you have passed, some pitch of the structure has out-of-range octave.';
+
     public const COMMON_SCALES = [
         'lydian'            => ['1', '2', '3', '#4', '5', '6', '7'],
         'major'             => ['1', '2', '3', '4', '5', '6', '7'],
@@ -162,7 +166,7 @@ class Scale
                     try {
                         $p->moveHalfstep($acc[-1] === '#' ? $order_array[0] : $order_array[1]);
                     } catch (\OutOfBoundsException $e) {
-                        throw new \OutOfBoundsException('Passed parameters result in structure having exceeding accidentals.');
+                        throw new \OutOfBoundsException(self::ACCIDENTAL_EXCEPTION_MESSAGE);
                     }
                 }
             }
@@ -289,7 +293,7 @@ class Scale
                 $p->setOctave($octaves[$i]);
             } catch (\UnexpectedValueException $e) {
                 throw new \OutOfBoundsException(
-                    'Because of the parameters you have passed, some pitch of the structure has out-of-range octave.'
+                    self::OCTAVE_EXCEPTION_MESSAGE
                 );
             }
         }
