@@ -250,8 +250,8 @@ class StructuresController extends AbstractController
     {
         if (!is_null($quality) && !is_string($quality)) {
             return $this->json(['message' => 'Incorrect quality data type (available: null|string).'], Response::HTTP_BAD_REQUEST);
-        } elseif (!is_null($inversion) && !is_string($inversion)) {
-            return $this->json(['message' => 'Incorrect inversion data type (available: null|string).'], Response::HTTP_BAD_REQUEST);
+        } elseif (!is_null($inversion) && !is_int($inversion)) {
+            return $this->json(['message' => 'Incorrect inversion data type (available: null|int).'], Response::HTTP_BAD_REQUEST);
         }
         return null;
     }
