@@ -87,7 +87,7 @@ class Scale
         }
         if (!preg_match('/^([b]{0,3}[1-7]|[#]{0,3}[1-7])(?:\,[b]{0,3}[1-7]|\,[#]{0,3}[1-7])*$/', $scale_formula_check)
             &&
-            !in_array($scale_formula_check, Scale::COMMON_SCALES)) {
+            !in_array($scale_formula_check, array_keys(Scale::COMMON_SCALES))) {
             throw new UnexpectedValueException('Passed scale formula is invalid.');
         }
 
@@ -186,7 +186,7 @@ class Scale
         $scale_formula_present_degrees = array_map(function($x) {return $x[-1];}, $scale_formula);
         foreach ($scale as $i => $pitch) {
             if (!in_array((string) ($i + 1), $scale_formula_present_degrees)) {
-//                $pitch->setAccidental('natural');
+                $pitch->setAccidental('natural');
             }
         }
 
