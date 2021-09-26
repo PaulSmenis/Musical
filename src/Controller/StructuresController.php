@@ -138,14 +138,7 @@ class StructuresController extends AbstractController
                 $octave === null
             );
         } catch (\Throwable $e) {
-            return $this->json([
-                'message' => [
-                $e->getMessage(),
-                'pitch' => $pitch,
-                'formula' => $formula,
-                'degree' => $degree
-            ]
-            ], Response::HTTP_BAD_REQUEST);
+            return $this->json(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
         return $this->json($scale->getPitches(), Response::HTTP_OK);
     }
@@ -161,11 +154,11 @@ class StructuresController extends AbstractController
     private function validatePitchDataTypes($name, $accidental, $octave): ?JsonResponse
     {
         if (!is_null($name) && !is_string($name)) {
-            return $this->json(['error' => 'Incorrect name data type (available: null|string).'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['message' => 'Incorrect name data type (available: null|string).'], Response::HTTP_BAD_REQUEST);
         } elseif (!is_null($accidental) && !is_string($accidental)) {
-            return $this->json(['error' => 'Incorrect accidental data type (available: null|string).'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['message' => 'Incorrect accidental data type (available: null|string).'], Response::HTTP_BAD_REQUEST);
         } elseif (!is_null($octave) && !is_int($octave)) {
-            return $this->json(['error' => 'Incorrect octave data type (available: null|int).'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['message' => 'Incorrect octave data type (available: null|int).'], Response::HTTP_BAD_REQUEST);
         }
         return null;
     }
@@ -180,9 +173,9 @@ class StructuresController extends AbstractController
     private function validateScaleDataTypes($formula, $degree): ?JsonResponse
     {
         if (!is_null($formula) && !is_string($formula) && !is_array($formula)) {
-            return $this->json(['error' => 'Incorrect formula data type (available: null|string|array).'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['message' => 'Incorrect formula data type (available: null|string|array).'], Response::HTTP_BAD_REQUEST);
         } elseif (!is_null($degree) && !is_string($degree)) {
-            return $this->json(['error' => 'Incorrect degree data type (available: null|string).'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['message' => 'Incorrect degree data type (available: null|string).'], Response::HTTP_BAD_REQUEST);
         }
         return null;
     }
@@ -212,7 +205,7 @@ class StructuresController extends AbstractController
                 $octave
             );
         } catch (\Throwable $e) {
-            return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return $this->json(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
         return $pitch;
     }
