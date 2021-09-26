@@ -51,6 +51,14 @@ class Scale
         bool $randomOctave = false
     )
     {
+        if ($scale_formula === '') {
+            throw new UnexpectedValueException('Passed formula is invalid.');
+        }
+
+        if ($scale_degree_formulaic === '') {
+            throw new UnexpectedValueException('Passed degree is invalid.');
+        }
+
         if (is_null($pitch)) {
             $randomAccidental = true;
             $randomOctave = true;
@@ -72,6 +80,17 @@ class Scale
         $oct            = $pitch->getOctave();
         $start          = array_search($pitch_name, Pitch::NAMES);
 
+        if (is_array($scale_formula)) {
+            $scale_formula_check = implode(',', $scale_formula);
+        } else {
+            $scale_formula_check = $scale_formula;
+        }
+        if (!preg_match('/^([b]{0,3}[1-7]|[#]{0,3}[1-7])(?:\,[b]{0,3}[1-7]|\,[#]{0,3}[1-7])*$/', $scale_formula_check)
+            &&
+            !in_array($scale_formula_check, Scale::COMMON_SCALES)) {
+            throw new UnexpectedValueException('Passed scale formula is invalid.');
+        }
+
         $process_formulaic = function ($scale_degree_formulaic) use ($modes) {
             if (mb_strlen($scale_degree_formulaic) > 1) {
                 $scale_degree = $scale_degree_formulaic[-1];
@@ -85,7 +104,7 @@ class Scale
             if ($check) {
                 $finish = array_search($scale_degree, $modes);
             } else {
-                throw new UnexpectedValueException('Passed value (either formula or degree) is invalid.');
+                throw new UnexpectedValueException('Passed degree is invalid.');
             }
             return [$scale_degree, $f_acc, $finish];
         };
@@ -154,16 +173,6 @@ class Scale
             return $a;
         };
 
-        $this->setPitches($scale);
-
-        $scale = $shift_scale($scale, $f_acc, ['lower', 'raise']);
-        $scale = $shift_scale($scale, $acc, ['raise', 'lower']);
-
-        $scale = (ArrayHelper::rearrangeFromIndex($scale, 8 - (int) $scale_degree));
-        $scale_basic = array_map(function($el) {return $el->getName();}, $scale);
-
-        // Now, since we've constructed our major scale, we can actually apply our scale formula
-
         if (in_array($scale_formula, array_keys(self::COMMON_SCALES))) {
             $scale_formula = self::COMMON_SCALES[$scale_formula];
         } else {
@@ -171,6 +180,24 @@ class Scale
                 $scale_formula = explode(',', $scale_formula);
             }
         }
+
+        $scale = (ArrayHelper::rearrangeFromIndex($scale, 8 - (int) $scale_degree));
+
+        $scale_formula_present_degrees = array_map(function($x) {return $x[-1];}, $scale_formula);
+        foreach ($scale as $i => $pitch) {
+            if (!in_array((string) ($i + 1), $scale_formula_present_degrees)) {
+//                $pitch->setAccidental('natural');
+            }
+        }
+
+        $this->setPitches($scale);
+
+        $scale = $shift_scale($scale, $f_acc, ['lower', 'raise']);
+        $scale = $shift_scale($scale, $acc, ['raise', 'lower']);
+
+        $scale_basic = array_map(function($el) {return $el->getName();}, $scale);
+
+        // Now, since we've constructed our major scale, we can actually apply our scale formula
 
         $apply_formula = function (array $scale, array $formula) use ($process_formulaic, $shift_pitch) {
             $output_pitches = [];
