@@ -239,4 +239,14 @@ class ScaleTest extends TestCase
             '1'
         );
     }
+
+    /**
+     * If pitch parameters result in generating scale which has out-of-range octaves, an exception should be thrown
+     */
+    public function testScalePitchesSetter()
+    {
+        $this->expectException(\UnexpectedValueException::class);
+        $scale = new Scale;
+        $scale->setPitches([new Pitch, new Pitch, 'pee-pee-poo-poo']);
+    }
 }

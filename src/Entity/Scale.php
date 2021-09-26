@@ -44,7 +44,7 @@ class Scale
      * @throws Exception
      */
     public function __construct(
-        ?Pitch $pitch,
+        ?Pitch $pitch = null,
         array|string|null $scale_formula = 'major',
         ?string $scale_degree_formulaic = '1',
         bool $randomAccidental = false,
@@ -162,7 +162,7 @@ class Scale
                     try {
                         $p->moveHalfstep($acc[-1] === '#' ? $order_array[0] : $order_array[1]);
                     } catch (\OutOfBoundsException $e) {
-                        throw new \OutOfBoundsException('Passed parameters result in scale having exceeding accidentals.');
+                        throw new \OutOfBoundsException('Passed parameters result in structure having exceeding accidentals.');
                     }
                 }
             }
@@ -289,7 +289,7 @@ class Scale
                 $p->setOctave($octaves[$i]);
             } catch (\UnexpectedValueException $e) {
                 throw new \OutOfBoundsException(
-                    'Because of the parameters you have passed, some pitch of the scale has out-of-range octave.'
+                    'Because of the parameters you have passed, some pitch of the structure has out-of-range octave.'
                 );
             }
         }
@@ -332,8 +332,13 @@ class Scale
     /**
      * @param array $pitches
      */
-    private function setPitches(array $pitches): void
+    public function setPitches(array $pitches): void
     {
+        foreach($pitches as $pitch) {
+            if (!($pitch instanceof Pitch)) {
+                throw new UnexpectedValueException('One or more of proposed scale pitches is of wrong type.');
+            }
+        }
         $this->pitches = $pitches;
     }
 }

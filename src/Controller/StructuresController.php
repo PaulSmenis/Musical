@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Chord;
 use Exception;
 use App\Entity\Pitch;
 use App\Entity\Scale;
@@ -32,7 +33,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class StructuresController extends AbstractController
 {
     /**
-     * Returns randomly generated pitch.
+     * Generates pitch. Non-passed value counts as "random".
      *
      * Allowed octaves are 0-8 SPL.
      * Allowed accidentals are triple at max.
@@ -75,7 +76,7 @@ class StructuresController extends AbstractController
     }
 
     /**
-     * Generates and returns a certain pitch structure (interval, chord, scale) built on tonic.
+     * Generates scale. Non-passed value counts as "random".
      *
      * Basically an array of pitches.
      *
@@ -89,7 +90,7 @@ class StructuresController extends AbstractController
      *         @SWG\Property(property="accidental", type="string", example="#"),
      *         @SWG\Property(property="octave", type="integer", example=5),
      *         @SWG\Property(property="formula", type="string", example="minor"),
-     *         @SWG\Property(property="degree", type="integer", example=5)
+     *         @SWG\Property(property="degree", type="string", example="b3")
      *     )
      * )
      *
@@ -141,6 +142,59 @@ class StructuresController extends AbstractController
             return $this->json(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
         return $this->json($scale->getPitches(), Response::HTTP_OK);
+    }
+
+    /**
+     * Generates chord. Non-passed value counts as "random".
+     *
+     * @Route("/chord", methods={"GET"})
+     *
+     * @SWG\Parameter(
+     *     name="data",
+     *     in="body",
+     *     @SWG\Schema(
+     *         @SWG\Property(property="name", type="string", example="G"),
+     *         @SWG\Property(property="accidental", type="string", example="#"),
+     *         @SWG\Property(property="octave", type="integer", example=5),
+     *         @SWG\Property(property="quality", type="string", example="m7b5"),
+     *         @SWG\Property(property="inversion", type="integer", example=3),
+     *     )
+     * )
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="Some structure (i.e. pitches array) has been created and returned successfully.",
+     *     @SWG\Property(property="answer", type="array",
+     *             @SWG\Items(
+     *                 @SWG\Property(property="name", type="string", example="G"),
+     *                 @SWG\Property(property="accidental", type="string", example="#"),
+     *                 @SWG\Property(property="octave", type="integer", example=5)
+     *             )
+     *         )
+     *     )
+     * )
+     *
+     * @param Request $request
+     * @return Response
+     * @throws Exception
+     */
+    public function chord(Request $request): Response
+    {
+        $pitch = $this->processPitch($request);
+
+        if (!($pitch instanceof Pitch)) {
+            return $pitch;
+        }
+
+        try {
+            $quality = $request->get('quality');
+            $inversion = $request->get('inversion');
+
+            $chord = new Chord($pitch, $quality, $inversion);
+        } catch (\Throwable $e) {
+            return $this->json(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+        return $this->json(['pitches' => $chord->getScale()->getPitches(), 'name' => $chord->getChordName()], Response::HTTP_OK);
     }
 
     /**
