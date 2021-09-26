@@ -190,6 +190,11 @@ class StructuresController extends AbstractController
             $quality = $request->get('quality');
             $inversion = $request->get('inversion');
 
+            $chordDataTypesValidation = $this->validateChordDataTypes($quality, $inversion);
+            if ($chordDataTypesValidation !== null) {
+                return $chordDataTypesValidation;
+            }
+
             $chord = new Chord($pitch, $quality, $inversion);
         } catch (\Throwable $e) {
             return $this->json(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
@@ -230,6 +235,23 @@ class StructuresController extends AbstractController
             return $this->json(['message' => 'Incorrect formula data type (available: null|string|array).'], Response::HTTP_BAD_REQUEST);
         } elseif (!is_null($degree) && !is_string($degree)) {
             return $this->json(['message' => 'Incorrect degree data type (available: null|string).'], Response::HTTP_BAD_REQUEST);
+        }
+        return null;
+    }
+
+    /**
+     * Validates data types of chord parameters passed in the request.
+     *
+     * @param $quality
+     * @param $inversion
+     * @return JsonResponse|null
+     */
+    private function validateChordDataTypes($quality, $inversion): ?JsonResponse
+    {
+        if (!is_null($quality) && !is_string($quality)) {
+            return $this->json(['message' => 'Incorrect quality data type (available: null|string).'], Response::HTTP_BAD_REQUEST);
+        } elseif (!is_null($inversion) && !is_string($inversion)) {
+            return $this->json(['message' => 'Incorrect inversion data type (available: null|string).'], Response::HTTP_BAD_REQUEST);
         }
         return null;
     }
