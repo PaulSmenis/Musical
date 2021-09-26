@@ -159,16 +159,30 @@ class Scale
             if ($acc !== 'natural') {
                 $i = mb_strlen($acc);
                 while ($i--) {
-                    $p->moveHalfstep($acc[-1] === '#' ? $order_array[0] : $order_array[1]);
+                    try {
+                        $p->moveHalfstep($acc[-1] === '#' ? $order_array[0] : $order_array[1]);
+                    } catch (\OutOfBoundsException $e) {
+                        throw new \OutOfBoundsException('Passed parameters result in scale having exceeding accidentals.');
+                    }
                 }
             }
             return $p;
         };
 
-        $shift_scale = function(array $scale, string $acc, array $order_array) use ($shift_pitch) {
+        $shift_scale = function(array $scale, string $acc, array $order_array) use ($shift_pitch, $randomAccidental) {
             $a = [];
-            foreach($scale as &$p) {
-                $a[] = $shift_pitch($p, $acc, $order_array);
+            if ($randomAccidental) {
+                try {
+                    foreach($scale as &$p) {
+                        $a[] = $shift_pitch($p, $acc, $order_array);
+                    }
+                } catch (\OutOfBoundsException $e) {
+                    return $scale;
+                }
+            } else {
+                foreach($scale as &$p) {
+                    $a[] = $shift_pitch($p, $acc, $order_array);
+                }
             }
             return $a;
         };
@@ -271,7 +285,13 @@ class Scale
         for ($i = 0; $i < count($octaves); $i++) {
             /** @var Pitch $p */
             $p = $scale[$i];
-            $p->setOctave($octaves[$i]);
+            try {
+                $p->setOctave($octaves[$i]);
+            } catch (\UnexpectedValueException $e) {
+                throw new \OutOfBoundsException(
+                    'Because of the parameters you have passed, some pitch of the scale has out-of-range octave.'
+                );
+            }
         }
 
         $this->setPitches($scale);
