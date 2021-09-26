@@ -180,7 +180,7 @@ class StructuresController extends AbstractController
     private function validateScaleDataTypes($formula, $degree): ?JsonResponse
     {
         if (!is_null($formula) && !is_string($formula) && !is_array($formula)) {
-            return $this->json(['error' => 'Incorrect formula data type (available: null|string).'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['error' => 'Incorrect formula data type (available: null|string|array).'], Response::HTTP_BAD_REQUEST);
         } elseif (!is_null($degree) && !is_string($degree)) {
             return $this->json(['error' => 'Incorrect degree data type (available: null|string).'], Response::HTTP_BAD_REQUEST);
         }
