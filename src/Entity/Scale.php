@@ -43,9 +43,17 @@ class Scale
      * Denotes which scale degree you've passed as a pitch (e.g. 'b3'). Tonic by default.
      * @throws Exception
      */
-    public function __construct(?Pitch $pitch, array|string|null $scale_formula = 'major', ?string $scale_degree_formulaic = '1')
+    public function __construct(
+        ?Pitch $pitch,
+        array|string|null $scale_formula = 'major',
+        ?string $scale_degree_formulaic = '1',
+        bool $randomAccidental = false,
+        bool $randomOctave = false
+    )
     {
         if (is_null($pitch)) {
+            $randomAccidental = true;
+            $randomOctave = true;
             $pitch = new Pitch;
         }
 
@@ -216,11 +224,21 @@ class Scale
             $oct -= 1;
         }
 
+        $needsLowering = false;
         while ($target !== $oct) {
             foreach ($octaves as &$o) {
                 $o += $dir;
             }
+            if ($randomOctave && ($o < 0 || $o > 8)) {;
+                $needsLowering = true;
+            }
             $target += $dir;
+        }
+
+        if ($needsLowering) {
+            foreach($octaves as &$o) {
+                $o--;
+            }
         }
 
         for ($i = 0; $i < count($octaves); $i++) {

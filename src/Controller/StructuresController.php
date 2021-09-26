@@ -112,7 +112,6 @@ class StructuresController extends AbstractController
      */
     public function scale(Request $request): Response
     {
-        $name = $request->get('name');
         $accidental = $request->get('accidental');
         $octave = $request->get('octave');
 
@@ -131,23 +130,13 @@ class StructuresController extends AbstractController
                 return $scaleDataTypesValidation;
             }
 
-            scale:
-            try {
-                $scale = new Scale(
-                    $pitch,
-                    $formula,
-                    $degree,
-                );
-            } catch (\Throwable $e) {
-                if ($octave === null || $accidental === null) {
-                    // This prevents value overflow exception if octave or accidental is random
-                    // (####, 9 octave, etc.) and tries to create pitch and scale again.
-                    $pitch = new Pitch($name, $accidental, $octave);
-                    goto scale;
-                } else {
-                    throw new Exception($e->getMessage());
-                }
-            }
+            $scale = new Scale(
+                $pitch,
+                $formula,
+                $degree,
+                $accidental === null,
+                $octave === null
+            );
         } catch (\Throwable $e) {
             return $this->json([
                 'message' => [
