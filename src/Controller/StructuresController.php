@@ -254,8 +254,8 @@ class StructuresController extends AbstractController
         }
 
         if ($sane_mode) {
-            if (in_array($accidental, ['bbb', '###']) || $accidental === null) {
-                $sane_acc = ['bb', 'b', 'natural', '#', '##'];
+            if (in_array($accidental, ['bbb', 'bb', '##', '###']) || $accidental === null) {
+                $sane_acc = ['b', 'natural', '#'];
                 $accidental = $sane_acc[array_rand($sane_acc)];
             }
             if (in_array($octave, [0, 1, 2, 6, 7, 8]) || $octave === null) {
