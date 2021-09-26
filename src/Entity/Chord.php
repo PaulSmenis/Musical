@@ -146,9 +146,10 @@ class Chord
     #[Pure] public function getChordName(): string
     {
         $tonic = $this->getTonic();
-        $name = $tonic->getName() . $tonic->getAccidental() . $this->quality;
+        $acc = $tonic->getAccidental();
+        $name = $tonic->getName() . ($acc !== 'natural' ? $acc : '') . $this->quality;
         if ($this->inversion !== 0) {
-            $inversion_text = ["1st", "2nd", "3rd", "4th"][$this->inversion];
+            $inversion_text = ["1st", "2nd", "3rd", "4th"][$this->inversion - 1];
             $name .= " ({$inversion_text} inversion)";
         } else {
             $name .= " (root)";
