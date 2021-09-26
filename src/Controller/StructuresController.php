@@ -180,7 +180,7 @@ class StructuresController extends AbstractController
      */
     public function chord(Request $request): Response
     {
-        $pitch = $this->processPitch($request);
+        $pitch = $this->processPitch($request, true);
 
         if (!($pitch instanceof Pitch)) {
             return $pitch;
@@ -238,9 +238,10 @@ class StructuresController extends AbstractController
      * Extracts and validates pitch data from request and forms pitch object.
      *
      * @param $request
+     * @param bool $sane_mode
      * @return JsonResponse|Pitch
      */
-    private function processPitch($request): JsonResponse|Pitch
+    private function processPitch($request, bool $sane_mode = false): JsonResponse|Pitch
     {
         $name = $request->get('name');
         $accidental = $request->get('accidental');
@@ -250,6 +251,17 @@ class StructuresController extends AbstractController
 
         if ($pitchDataTypeValidation !== null) {
             return $pitchDataTypeValidation;
+        }
+
+        if ($sane_mode) {
+            if (in_array($accidental, ['bbb', '###']) || $accidental === null) {
+                $sane_acc = ['bb', 'b', 'natural', '#', '##'];
+                $accidental = $sane_acc[array_rand($sane_acc)];
+            }
+            if (in_array($octave, [0, 1, 2, 6, 7, 8]) || $octave === null) {
+                $sane_oct = [3, 4, 5];
+                $octave = $sane_oct[array_rand($sane_oct)];
+            }
         }
 
         try {
