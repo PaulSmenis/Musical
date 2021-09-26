@@ -213,4 +213,30 @@ class ScaleTest extends TestCase
         );
         $this->assertEquals('Ab1 Db2 Ab2', $scale);
     }
+
+    /**
+     * If pitch parameters result in generating scale which has exceeding accidentals, an exception should be thrown
+     */
+    public function testExceedingAccidentalConstructorException()
+    {
+        $this->expectException(\OutOfBoundsException::class);
+        new Scale(
+            new Pitch('F', 'bbb', 3),
+            '1,4',
+            '1'
+        );
+    }
+
+    /**
+     * If pitch parameters result in generating scale which has out-of-range octaves, an exception should be thrown
+     */
+    public function testExceedingOctaveConstructorException()
+    {
+        $this->expectException(\OutOfBoundsException::class);
+        new Scale(
+            new Pitch('F', '#', 8),
+            'major',
+            '1'
+        );
+    }
 }
