@@ -61,6 +61,10 @@ class Chord
         ?int $inversion = 0 // 0 means 'root'
     )
     {
+        if (in_array($quality, ['M'])) {
+            $quality = '';
+        }
+
         if ($pitch === null) {
             $pitch = new Pitch;
         }
