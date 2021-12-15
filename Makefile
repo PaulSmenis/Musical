@@ -40,4 +40,4 @@ test:
 	@bash -c "docker-compose exec php-fpm php bin/phpunit;"
 
 log:
-	@bash -c "less var/log/${ENVIRONMENT}.log;"
+	@bash -c "tail -f var/log/${ENVIRONMENT}.log;"
