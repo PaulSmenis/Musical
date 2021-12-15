@@ -24,5 +24,6 @@ make log
 
 ## See available commands
 ``` bash
+# From project root folder
 make
 ```
