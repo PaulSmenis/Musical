@@ -3,6 +3,6 @@ monolog:
         structures:
             type: rotating_file
             path: "%kernel.logs_dir%/structures_%kernel.environment%.log"
-            level: error
+            level: debug
             max_files: 10
-            channels: ['!event', '!request']
+            channels: ['!event', '!request', 'main']

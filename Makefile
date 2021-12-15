@@ -1,3 +1,5 @@
+ENVIRONMENT=$(shell grep APP_ENV .env | sed 's/.*=//')
+
 help:
 	@echo "\033[0;33mhelp\t\t\t- show this menu\033[0m"
 	@echo "\033[0;33mbuild\t\t\t- build project (from scratch; creates containers)\033[0m"
@@ -36,3 +38,6 @@ to-php:
 test:
 	@echo "\n\033[1;mRunning unit tests\033[0m"
 	@bash -c "docker-compose exec php-fpm php bin/phpunit;"
+
+log:
+	@bash -c "less var/log/${ENVIRONMENT}.log;"
