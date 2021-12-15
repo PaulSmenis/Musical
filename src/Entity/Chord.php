@@ -147,7 +147,7 @@ class Chord
         }
     }
 
-    #[Pure] public function getChordName(): string
+    #[Pure] public function __toString(): string
     {
         $tonic = $this->getTonic();
         $acc = $tonic->getAccidental();

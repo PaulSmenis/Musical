@@ -50,9 +50,7 @@ class Scale
     public function __construct(
         ?Pitch $pitch = null,
         array|string|null $scale_formula = 'major',
-        ?string $scale_degree_formulaic = '1',
-        bool $randomAccidental = false,
-        bool $randomOctave = false
+        ?string $scale_degree_formulaic = '1'
     )
     {
         if ($scale_formula === '') {
@@ -63,18 +61,25 @@ class Scale
             throw new UnexpectedValueException('Passed degree is invalid.');
         }
 
+        $random_accidental = false;
+        $random_octave = false;
+        $random_scale_formula = false;
+        $random_scale_degree_formulaic = false;
+
         if (is_null($pitch)) {
-            $randomAccidental = true;
-            $randomOctave = true;
+            $random_accidental = true;
+            $random_octave = true;
             $pitch = new Pitch;
         }
 
         if (is_null($scale_formula)) {
             $scale_formula = 'major';
+            $random_scale_formula = true;
         }
 
         if (is_null($scale_degree_formulaic)) {
             $scale_degree_formulaic = '1';
+            $random_scale_degree_formulaic = true;
         }
 
         $map            = [4, 0, 7, 3, 6, 2, 5]; // Bunch of music theory stuff
@@ -167,15 +172,16 @@ class Scale
                         $p->moveHalfstep($acc[-1] === '#' ? $order_array[0] : $order_array[1]);
                     } catch (\OutOfBoundsException $e) {
                         throw new \OutOfBoundsException(self::ACCIDENTAL_EXCEPTION_MESSAGE);
+                        // TODO При рандомной тонике сдвигать тонику, при рандомном аццидентал сдвигать аццидентал, при рандомной формуле менять формулу,
                     }
                 }
             }
             return $p;
         };
 
-        $shift_scale = function(array $scale, string $acc, array $order_array) use ($shift_pitch, $randomAccidental) {
+        $shift_scale = function(array $scale, string $acc, array $order_array) use ($shift_pitch, $random_accidental) {
             $a = [];
-            if ($randomAccidental) {
+            if ($random_accidental) {
                 try {
                     foreach($scale as &$p) {
                         $a[] = $shift_pitch($p, $acc, $order_array);
@@ -274,7 +280,7 @@ class Scale
             foreach ($octaves as &$o) {
                 $o += $dir;
             }
-            if ($randomOctave && ($o < 0 || $o > 8)) {;
+            if ($random_octave && ($o < 0 || $o > 8)) {;
                 $needsLowering = true;
             }
             $target += $dir;

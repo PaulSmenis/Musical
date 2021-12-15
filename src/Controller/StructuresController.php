@@ -142,10 +142,15 @@ class StructuresController extends AbstractController
             $scale = new Scale(
                 $pitch,
                 $formula,
-                $degree,
-                $accidental === null,
-                $octave === null
+                $degree
             );
+            $this->logger->notice($scale, [
+                'pitch' => (string) $pitch,
+                'formula' => $formula,
+                'degree' => $degree,
+                'accidental' => $accidental,
+                'octave' => $octave
+            ]);
         } catch (\Throwable $e) {
             $this->logger->notice($e);
             return $this->json(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
@@ -205,11 +210,12 @@ class StructuresController extends AbstractController
             }
 
             $chord = new Chord($pitch, $quality, $inversion);
+            $this->logger->notice($chord);
         } catch (\Throwable $e) {
             $this->logger->notice($e);
             return $this->json(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
-        return $this->json(['pitches' => $chord->getScale()->getPitches(), 'name' => $chord->getChordName()], Response::HTTP_OK);
+        return $this->json(['pitches' => $chord->getScale()->getPitches(), 'name' => (string) $chord], Response::HTTP_OK);
     }
 
     /**
@@ -302,6 +308,7 @@ class StructuresController extends AbstractController
                 $accidental,
                 $octave
             );
+            $this->logger->notice($pitch);
         } catch (\Throwable $e) {
             $this->logger->notice($e);
             return $this->json(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
