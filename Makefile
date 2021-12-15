@@ -6,7 +6,7 @@ help:
 	@echo "\033[0;33mstart\t\t\t- start project containers\033[0m"
 	@echo "\033[0;33mstop\t\t\t- stop project containers\033[0m"
 	@echo "\033[0;33mto-php\t\t\t- enter php container\033[0m"
-	@echo "\033[0;33mtest-unit\t\t- run unit tests (phpunit)\033[0m"
+	@echo "\033[0;33mtest\t\t\t- run unit tests (phpunit)\033[0m"
 
 build:
 	@echo "\n\033[1;mBuilding project\033[0m"
@@ -34,5 +34,5 @@ to-php:
 	@bash -c "docker-compose exec php-fpm bash;"
 
 test:
-	@echo "\n\033[1;mRunning unittests\033[0m"
+	@echo "\n\033[1;mRunning unit tests\033[0m"
 	@bash -c "docker-compose exec php-fpm php bin/phpunit;"
