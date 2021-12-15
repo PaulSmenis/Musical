@@ -2,10 +2,11 @@
 
 namespace App\Controller;
 
-use App\Entity\Chord;
 use Exception;
+use App\Entity\Chord;
 use App\Entity\Pitch;
 use App\Entity\Scale;
+use Psr\Log\LoggerInterface;
 use Swagger\Annotations as SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Symfony\Component\HttpFoundation\Request;
@@ -32,6 +33,13 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  */
 class StructuresController extends AbstractController
 {
+    private LoggerInterface $logger;
+
+    public function __construct(LoggerInterface $structuresLogger)
+    {
+        $this->logger = $structuresLogger;
+    }
+
     /**
      * Generates pitch. Non-passed value counts as "random".
      *
@@ -139,6 +147,7 @@ class StructuresController extends AbstractController
                 $octave === null
             );
         } catch (\Throwable $e) {
+            $this->logger->notice($e);
             return $this->json(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
         return $this->json($scale->getPitches(), Response::HTTP_OK);
@@ -180,7 +189,7 @@ class StructuresController extends AbstractController
      */
     public function chord(Request $request): Response
     {
-        $pitch = $this->processPitch($request, true);
+        $pitch = $this->processPitch($request);
 
         if (!($pitch instanceof Pitch)) {
             return $pitch;
@@ -197,6 +206,7 @@ class StructuresController extends AbstractController
 
             $chord = new Chord($pitch, $quality, $inversion);
         } catch (\Throwable $e) {
+            $this->logger->notice($e);
             return $this->json(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
         return $this->json(['pitches' => $chord->getScale()->getPitches(), 'name' => $chord->getChordName()], Response::HTTP_OK);
@@ -293,6 +303,7 @@ class StructuresController extends AbstractController
                 $octave
             );
         } catch (\Throwable $e) {
+            $this->logger->notice($e);
             return $this->json(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
         return $pitch;
