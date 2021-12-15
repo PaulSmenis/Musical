@@ -49,8 +49,8 @@ class Scale
      */
     public function __construct(
         ?Pitch $pitch = null,
-        array|string|null $scale_formula = 'major',
-        ?string $scale_degree_formulaic = '1'
+        array|string|null $scale_formula = null,
+        ?string $scale_degree_formulaic = null
     )
     {
         if ($scale_formula === '') {
