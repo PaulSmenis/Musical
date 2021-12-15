@@ -16,6 +16,12 @@ make to-php
 make phpunit
 ```
 
+## See all logs streamed into one file for a running environment
+``` bash
+# From project root folder
+make log
+```
+
 ## See available commands
 ``` bash
 make
