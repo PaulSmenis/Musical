@@ -38,8 +38,9 @@ class Scale
      * Construct a scale from some given tonic.
      * N.B.: Intervals are treated as a ditonic scale.
      *
-     * @param Pitch|null $pitch
+     * @param array|Pitch|null $pitch
      * Some pitch you pass as a reference to build other pitches (usually it's the tonic). Random by default.
+     * Passing it as array: ['name' => Pitch::NAMES, 'accidental' => Pitch::ACCIDENTALS, 'octave' => 0-8]
      * @param array|string|null $scale_formula
      * Scale formula contains either strings which represent scale degrees -- e.g. 'b3,5,1'
      * or a string with one of generic scale formulas (see COMMON_DIATONIC_SCALES). Major by default.
@@ -48,7 +49,7 @@ class Scale
      * @throws Exception
      */
     public function __construct(
-        ?Pitch $pitch = null,
+        array|Pitch|null $pitch = null,
         array|string|null $scale_formula = null,
         ?string $scale_degree_formulaic = null
     )
@@ -61,6 +62,7 @@ class Scale
             throw new UnexpectedValueException('Passed degree is invalid.');
         }
 
+        $random_name = false;
         $random_accidental = false;
         $random_octave = false;
         $random_scale_formula = false;
@@ -70,7 +72,18 @@ class Scale
             $random_accidental = true;
             $random_octave = true;
             $pitch = new Pitch;
-        }
+        } elseif (is_array($pitch)) {
+            $random_name = $pitch['name'] == null;
+            $random_accidental = $pitch['accidental'] == null;
+            $random_octave = $pitch['octave'] == null;
+            Pitch::validatePitchArray($pitch);
+
+            $pitch = new Pitch(
+                $pitch['name'],
+                $pitch['accidental'],
+                $pitch['octave']
+            );
+        } // i.e. else it's an instance of Pitch class
 
         if (is_null($scale_formula)) {
             $scale_formula = 'major';
@@ -322,7 +335,7 @@ class Scale
     /**
      * @return array
      */
-    public function toArray(): array
+    public function __toArray(): array
     {
         $array = [];
         foreach ($this->pitches as $pitch) {
@@ -350,5 +363,21 @@ class Scale
             }
         }
         $this->pitches = $pitches;
+    }
+
+    /**
+     * Validates data types of scale parameters passed in the request.
+     *
+     * @param $formula
+     * @param $degree
+     * @throws UnexpectedValueException
+     */
+    public static function validateScaleDataTypes($formula, $degree): void
+    {
+        if (!is_null($formula) && !is_string($formula) && !is_array($formula)) {
+            throw new UnexpectedValueException('Incorrect formula data type (available: null|string|array).');
+        } elseif (!is_null($degree) && !is_string($degree)) {
+            throw new UnexpectedValueException('Incorrect degree data type (available: null|string).');
+        }
     }
 }

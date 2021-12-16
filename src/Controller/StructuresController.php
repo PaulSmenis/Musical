@@ -75,11 +75,22 @@ class StructuresController extends AbstractController
      */
     public function pitch(Request $request): Response
     {
-        $pitch = $this->processPitch($request);
-        if ($pitch instanceof Pitch) {
+        $name = $request->get('name');
+        $accidental = $request->get('accidental');
+        $octave = $request->get('octave');
+
+        try {
+            Pitch::validatePitchDataTypes($name, $accidental, $octave);
+            $pitch = new Pitch(
+                $name,
+                $accidental,
+                $octave
+            );
+            $this->logger->notice($pitch);
             return $this->json($pitch, Response::HTTP_OK);
-        } else {
-            return $pitch;
+        } catch (\Throwable $e) {
+            $this->logger->notice($e);
+            return $this->json(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -124,28 +135,22 @@ class StructuresController extends AbstractController
         $accidental = $request->get('accidental');
         $octave = $request->get('octave');
 
-        $pitch = $this->processPitch($request);
-
-        if (!($pitch instanceof Pitch)) {
-            return $pitch;
-        }
-
         try {
             $formula = $request->get('formula');
             $degree = $request->get('degree');
-
-            $scaleDataTypesValidation = $this->validateScaleDataTypes($formula, $degree);
-            if ($scaleDataTypesValidation !== null) {
-                return $scaleDataTypesValidation;
-            }
+            Scale::validateScaleDataTypes($formula, $degree);
 
             $scale = new Scale(
-                $pitch,
+                [
+                    'name' => $request->get('name'),
+                    'accidental' => $request->get('accidental'),
+                    'octave' => $request->get('octave')
+                ],
                 $formula,
                 $degree
             );
             $this->logger->notice($scale, [
-                'pitch' => (string) $pitch,
+                'pitch' => (string) $scale,
                 'formula' => $formula,
                 'degree' => $degree,
                 'accidental' => $accidental,
@@ -155,7 +160,7 @@ class StructuresController extends AbstractController
             $this->logger->notice($e);
             return $this->json(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
-        return $this->json($scale->getPitches(), Response::HTTP_OK);
+        return $this->json((string) $scale, Response::HTTP_OK);
     }
 
     /**
@@ -239,23 +244,6 @@ class StructuresController extends AbstractController
     }
 
     /**
-     * Validates data types of scale parameters passed in the request.
-     *
-     * @param $formula
-     * @param $degree
-     * @return JsonResponse|null
-     */
-    private function validateScaleDataTypes($formula, $degree): ?JsonResponse
-    {
-        if (!is_null($formula) && !is_string($formula) && !is_array($formula)) {
-            return $this->json(['message' => 'Incorrect formula data type (available: null|string|array).'], Response::HTTP_BAD_REQUEST);
-        } elseif (!is_null($degree) && !is_string($degree)) {
-            return $this->json(['message' => 'Incorrect degree data type (available: null|string).'], Response::HTTP_BAD_REQUEST);
-        }
-        return null;
-    }
-
-    /**
      * Validates data types of chord parameters passed in the request.
      *
      * @param $quality
@@ -270,49 +258,5 @@ class StructuresController extends AbstractController
             return $this->json(['message' => 'Incorrect inversion data type (available: null|int).'], Response::HTTP_BAD_REQUEST);
         }
         return null;
-    }
-
-    /**
-     * Extracts and validates pitch data from request and forms pitch object.
-     *
-     * @param $request
-     * @param bool $sane_mode
-     * @return JsonResponse|Pitch
-     */
-    private function processPitch($request, bool $sane_mode = false): JsonResponse|Pitch
-    {
-        $name = $request->get('name');
-        $accidental = $request->get('accidental');
-        $octave = $request->get('octave');
-
-        $pitchDataTypeValidation = $this->validatePitchDataTypes($name, $accidental, $octave);
-
-        if ($pitchDataTypeValidation !== null) {
-            return $pitchDataTypeValidation;
-        }
-
-        if ($sane_mode) {
-            if (in_array($accidental, ['bbb', 'bb', '##', '###']) || $accidental === null) {
-                $sane_acc = ['b', 'natural', '#'];
-                $accidental = $sane_acc[array_rand($sane_acc)];
-            }
-            if (in_array($octave, [0, 1, 2, 6, 7, 8]) || $octave === null) {
-                $sane_oct = [3, 4, 5];
-                $octave = $sane_oct[array_rand($sane_oct)];
-            }
-        }
-
-        try {
-            $pitch = new Pitch(
-                $name,
-                $accidental,
-                $octave
-            );
-            $this->logger->notice($pitch);
-        } catch (\Throwable $e) {
-            $this->logger->notice($e);
-            return $this->json(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
-        }
-        return $pitch;
     }
 }

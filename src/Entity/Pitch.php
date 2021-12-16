@@ -6,6 +6,9 @@ namespace App\Entity;
 use Exception;
 use OutOfBoundsException;
 use JetBrains\PhpStorm\Pure;
+use Symfony\Component\Form\Exception\UnexpectedTypeException;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use UnexpectedValueException;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -347,6 +350,44 @@ class Pitch
     {
         if ($this->ifExceedsRangeFromBelow()) {
             $this->octave = 1;
+        }
+    }
+
+    /**
+     * Validates pitch array in scale and pitch constructor (array is an optional way for passing pitch).
+     *
+     * @param array $pitchArray
+     * @throws UnexpectedValueException
+     */
+    public static function validatePitchArray(array $pitchArray)
+    {
+        if (count($pitchArray) !== 3) { // Name, accidental and octave should be in passed array
+            throw new UnexpectedValueException('Passed array of pitch parameters is invalid.');
+        } else {
+            if (array_keys($pitchArray) !== ['name', 'accidental', 'octave']) {
+                throw new UnexpectedValueException('Passed array of pitch parameters is invalid.');
+            } else {
+                Pitch::validatePitchDataTypes(...array_values($pitchArray));
+            }
+        }
+    }
+
+    /**
+     * Validates data types of pitch parameters passed in the request.
+     *
+     * @param $name
+     * @param $accidental
+     * @param $octave
+     * @throws UnexpectedValueException
+     */
+    public static function validatePitchDataTypes($name, $accidental, $octave): void
+    {
+        if (!is_null($name) && !is_string($name)) {
+            throw new UnexpectedValueException('Incorrect name data type (available: null|string).');
+        } elseif (!is_null($accidental) && !is_string($accidental)) {
+            throw new UnexpectedValueException('Incorrect accidental data type (available: null|string).');
+        } elseif (!is_null($octave) && !is_int($octave)) {
+            throw new UnexpectedValueException('Incorrect octave data type (available: null|int).');
         }
     }
 }

@@ -56,7 +56,7 @@ class Chord
      * @throws \Exception
      */
     public function __construct(
-        ?Pitch $pitch = null,
+        ?Pitch $pitch = null, // TODO Сделать, как в Scale -- возможность выбора массива
         ?string $quality = '',
         ?int $inversion = 0 // 0 means 'root'
     )
