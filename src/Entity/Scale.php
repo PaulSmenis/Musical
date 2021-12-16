@@ -90,12 +90,12 @@ class Scale
         } // i.e. else it's an instance of Pitch class
 
         if (is_null($scale_formula)) {
-            $scale_formula = 'major';
+            $scale_formula = 'major'; // TODO добавить рандом
             $random_scale_formula = true;
         }
 
         if (is_null($scale_degree_formulaic)) {
-            $scale_degree_formulaic = '1';
+            $scale_degree_formulaic = '1'; // TODO добавить рандом
             $random_scale_degree_formulaic = true;
         }
 
@@ -189,7 +189,6 @@ class Scale
                         $p->moveHalfstep($acc[-1] === '#' ? $order_array[0] : $order_array[1]);
                     } catch (\OutOfBoundsException $e) {
                         throw new \OutOfBoundsException(self::ACCIDENTAL_EXCEPTION_MESSAGE);
-                        // TODO При рандомной тонике сдвигать тонику, при рандомном аццидентал сдвигать аццидентал, при рандомной формуле менять формулу,
                     }
                 }
             }
@@ -348,7 +347,6 @@ class Scale
                 $assignOctavesToScale($octaves, $scale);
             } elseif ($random_name) {
                 array_map(function (Pitch $p) use ($octaves) {$p->movePitchName(($octaves[0] === 0) ? 'raise' : 'lower');}, $scale);
-                // TODO Если ($octaves[0] === 0), сделать тоникой не С и не D, если 8 -- C, т.к. в остальных случаях октава переступит
             } elseif ($random_accidental) {
                 array_map(function (Pitch $p) use ($octaves) {$p->moveHalfstep(($octaves[0] === 0 ) ? 'raise' : 'lower');}, $scale);
             } else {
