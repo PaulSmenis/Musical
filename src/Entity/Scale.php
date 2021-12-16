@@ -73,9 +73,9 @@ class Scale
             $random_octave = true;
             $pitch = new Pitch;
         } elseif (is_array($pitch)) {
-            $random_name = $pitch['name'] == null;
-            $random_accidental = $pitch['accidental'] == null;
-            $random_octave = $pitch['octave'] == null;
+            $random_name = $pitch['name'] === null;
+            $random_accidental = $pitch['accidental'] === null;
+            $random_octave = $pitch['octave'] === null;
             Pitch::validatePitchArray($pitch);
 
             $pitch = new Pitch(
@@ -83,6 +83,10 @@ class Scale
                 $pitch['accidental'],
                 $pitch['octave']
             );
+
+            if (!in_array($pitch->getAccidental(), Pitch::getAccidentalsWithoutBordercases()) && !$random_accidental) {
+                throw new UnexpectedValueException('Not a valid accidental. Should be either natural or sharps/flats (up to ' . Pitch::getMaxAccidentalLength() - 1 . ')');
+            }
         } // i.e. else it's an instance of Pitch class
 
         if (is_null($scale_formula)) {
@@ -245,7 +249,25 @@ class Scale
             return $output_pitches;
         };
 
-        $scale      = $apply_formula($scale, $scale_formula);
+        if ($random_accidental || $random_name) {
+            try {
+                $scale = $apply_formula($scale, $scale_formula);
+            } catch (\OutOfBoundsException $e) {
+                $correctionDirection = $scale[0]->getAccidental()[0] === 'b' ? 'raise' : 'lower';
+                // If overflow happens with flat accidentals, correct upwards, else downwards
+                foreach ($scale as $scalePitch) {
+                    /** @var Pitch $scalePitch */
+                    if ($random_accidental) {
+                        $scalePitch->moveHalfstep($correctionDirection);
+                    } elseif ($random_name) {
+                        $scalePitch->movePitchName($correctionDirection);
+                    }
+                }
+                $scale = $apply_formula($scale, $scale_formula);
+            }
+        } else {
+            $scale = $apply_formula($scale, $scale_formula);
+        }
         $octaves    = [0];
         $shifts     = [];
         $c_ind      = array_search('C', $scale_basic);
@@ -305,15 +327,32 @@ class Scale
             }
         }
 
-        for ($i = 0; $i < count($octaves); $i++) {
-            /** @var Pitch $p */
-            $p = $scale[$i];
-            try {
-                $p->setOctave($octaves[$i]);
-            } catch (\UnexpectedValueException $e) {
-                throw new \OutOfBoundsException(
-                    self::OCTAVE_EXCEPTION_MESSAGE
-                );
+        $assignOctavesToScale = function (array $octaves, array $scale) {
+            for ($i = 0; $i < count($octaves); $i++) {
+                /** @var Pitch $p */
+                $p = $scale[$i];
+                try {
+                    $p->setOctave($octaves[$i]);
+                } catch (\UnexpectedValueException $e) {
+                    throw new \OutOfBoundsException(self::OCTAVE_EXCEPTION_MESSAGE);
+                }
+            }
+        };
+
+        try {
+            $assignOctavesToScale($octaves, $scale);
+        } catch (\OutOfBoundsException $e) {
+            if ($random_octave) {
+                $octaves = array_map(function (int $octave) use ($octaves) {return $octave + ($octaves[0] === 0) ? 1 : -1;}, $octaves);
+                // If octave overflows from below during creation process, we add 1 to all octaves (and vice versa) and assign octaves again
+                $assignOctavesToScale($octaves, $scale);
+            } elseif ($random_name) {
+                array_map(function (Pitch $p) use ($octaves) {$p->movePitchName(($octaves[0] === 0) ? 'raise' : 'lower');}, $scale);
+                // TODO Если ($octaves[0] === 0), сделать тоникой не С и не D, если 8 -- C, т.к. в остальных случаях октава переступит
+            } elseif ($random_accidental) {
+                array_map(function (Pitch $p) use ($octaves) {$p->moveHalfstep(($octaves[0] === 0 ) ? 'raise' : 'lower');}, $scale);
+            } else {
+                throw new \OutOfBoundsException(self::OCTAVE_EXCEPTION_MESSAGE);
             }
         }
 

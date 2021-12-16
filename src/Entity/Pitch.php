@@ -88,6 +88,13 @@ class Pitch
         $this->validateRange();
     }
 
+    public static function getAccidentalsWithoutBordercases(): array
+    {
+        $return = array_filter(Pitch::ACCIDENTALS, function(string $accidental) {return mb_strlen($accidental) < Pitch::getMaxAccidentalLength();});
+        $return[] = 'natural';
+        return $return;
+    }
+
     /**
      * @return string
      */
@@ -134,18 +141,18 @@ class Pitch
 
     /**
      * @param string|null $accidental
-     * @param bool $avoidValidation
+     * @param bool $avoid_validation
      * @throws OutOfBoundsException|UnexpectedValueException
      */
-    public function setAccidental(?string $accidental, bool $avoidValidation = false): void
+    public function setAccidental(?string $accidental, bool $avoid_validation = false): void
     {
         if (is_null($accidental)) {
-            $this->accidental = $this::ACCIDENTALS[array_rand($this::ACCIDENTALS)];
+            $this->accidental = $this::ACCIDENTALS[array_rand(Pitch::getAccidentalsWithoutBordercases())];
             $this->modifyAccidentalToNotExceedRange();
         } else {
             $this->validateAccidental($accidental);
             $this->accidental = $accidental;
-            if (!$avoidValidation) {
+            if (!$avoid_validation) {
                 $this->validateRange();
             }
         }
@@ -161,10 +168,10 @@ class Pitch
 
     /**
      * @param int|null $octave
-     * @param bool $avoidValidation
+     * @param bool $avoid_validation
      * @throws OutOfBoundsException|UnexpectedValueException
      */
-    public function setOctave(?int $octave, bool $avoidValidation = false): void
+    public function setOctave(?int $octave, bool $avoid_validation = false): void
     {
         if (is_null($octave)) {
             $this->octave = random_int(0, 8);
@@ -172,7 +179,7 @@ class Pitch
         } else {
             $this->validateOctave($octave);
             $this->octave = $octave;
-            if (!$avoidValidation) {
+            if (!$avoid_validation) {
                 $this->validateRange();
             }
         }
@@ -193,8 +200,8 @@ class Pitch
 
             $setAcc = function($dir, $sign) use ($direction, $acc) {
                 if ($direction === $dir) {
-                    if (mb_strlen($acc) > 2) {
-                        throw new OutOfBoundsException('Cannot shift accidental: result exceeds range of triples (###, bbb).');
+                    if (mb_strlen($acc) > Pitch::getMaxAccidentalLength() - 1) {
+                        throw new OutOfBoundsException('Cannot shift accidental: result exceeds maximum range.');
                     } else {
                         $this->setAccidental($acc . $sign);
                     }
@@ -266,7 +273,7 @@ class Pitch
     private function validateAccidental(string $accidental): void
     {
         if (!in_array($accidental, $this::ACCIDENTALS)) {
-            throw new UnexpectedValueException('Not a valid accidental. Should be either natural or sharps/flats (up to 3)');
+            throw new UnexpectedValueException('Not a valid accidental. Should be either natural or sharps/flats (up to ' . Pitch::getMaxAccidentalLength() . ')');
         }
     }
 
@@ -388,6 +395,32 @@ class Pitch
             throw new UnexpectedValueException('Incorrect accidental data type (available: null|string).');
         } elseif (!is_null($octave) && !is_int($octave)) {
             throw new UnexpectedValueException('Incorrect octave data type (available: null|int).');
+        }
+    }
+
+    public static function getMaxAccidentalLength(): int
+    {
+        return max(array_map(function (string $accSymbol) {return mb_strlen($accSymbol);}, array_merge(Pitch::ACCIDENTALS_DOWNWARDS, Pitch::ACCIDENTALS_UPWARDS)));
+    }
+
+    public function movePitchName(string $dir): void
+    {
+        $ordered_pitch_names = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+        $i = array_search($this->name, $ordered_pitch_names);
+        if ($dir === 'raise') {
+            if ($i === 6) {
+                $this->setName('C');
+            } else {
+                $this->setName($ordered_pitch_names[$i + 1]);
+            }
+        } elseif ($dir === 'lower') {
+            if ($i === 0) {
+                $this->setName('B');
+            } else {
+                $this->setName($ordered_pitch_names[$i - 1]);
+            }
+        } else {
+            // TODO Ексепшн
         }
     }
 }
