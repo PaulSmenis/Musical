@@ -14,6 +14,7 @@ build:
 	@echo "\n\033[1;mBuilding project\033[0m"
 	@bash -c "docker-compose build --no-cache;"
 	@bash -c "docker-compose up -d;"
+	@bash -c "docker-compose exec php-fpm composer install"
 
 up:
 	@echo "\n\033[1;mProject up\033[0m"
