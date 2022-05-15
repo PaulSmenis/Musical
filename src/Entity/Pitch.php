@@ -385,6 +385,7 @@ class Pitch
      * @param $name
      * @param $accidental
      * @param $octave
+     * @return void
      * @throws UnexpectedValueException
      */
     public static function validatePitchDataTypes($name, $accidental, $octave): void

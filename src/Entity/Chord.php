@@ -5,6 +5,9 @@ namespace App\Entity;
 
 
 use JetBrains\PhpStorm\Pure;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
+use UnexpectedValueException;
 
 class Chord
 {
@@ -191,5 +194,22 @@ class Chord
     public function getInversion(): int
     {
         return $this->inversion;
+    }
+
+    /**
+     * Validates data types of chord parameters passed in the request.
+     *
+     * @param $quality
+     * @param $inversion
+     * @return void
+     * @throws UnexpectedValueException
+     */
+    public static function validateChordDataTypes($quality, $inversion): void
+    {
+        if (!is_null($quality) && !is_string($quality)) {
+            throw new UnexpectedValueException('Incorrect quality data type (available: null|string).');
+        } elseif (!is_null($inversion) && !is_int($inversion)) {
+            throw new UnexpectedValueException('Incorrect inversion data type (available: null|int).');
+        }
     }
 }

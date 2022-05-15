@@ -199,21 +199,22 @@ class StructuresController extends AbstractController
      */
     public function chord(Request $request): Response
     {
-        $pitch = $this->processPitch($request);
-
-        if (!($pitch instanceof Pitch)) {
-            return $pitch;
-        }
+        $name = $request->get('name');
+        $accidental = $request->get('accidental');
+        $octave = $request->get('octave');
+        $quality = $request->get('quality');
+        $inversion = $request->get('inversion');
 
         try {
-            $quality = $request->get('quality');
-            $inversion = $request->get('inversion');
 
-            $chordDataTypesValidation = $this->validateChordDataTypes($quality, $inversion);
-            if ($chordDataTypesValidation !== null) {
-                return $chordDataTypesValidation;
-            }
+            Pitch::validatePitchDataTypes($name, $accidental, $octave);
+            $pitch = new Pitch(
+                $name,
+                $accidental,
+                $octave
+            );
 
+            Chord::validateChordDataTypes($quality, $inversion);
             $chord = new Chord($pitch, $quality, $inversion);
             $this->logger->notice($chord);
         } catch (\Throwable $e) {
@@ -221,42 +222,5 @@ class StructuresController extends AbstractController
             return $this->json(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
         return $this->json(['pitches' => $chord->getScale()->getPitches(), 'name' => (string) $chord], Response::HTTP_OK);
-    }
-
-    /**
-     * Validates data types of pitch parameters passed in the request.
-     *
-     * @param $name
-     * @param $accidental
-     * @param $octave
-     * @return JsonResponse|null
-     */
-    private function validatePitchDataTypes($name, $accidental, $octave): ?JsonResponse
-    {
-        if (!is_null($name) && !is_string($name)) {
-            return $this->json(['message' => 'Incorrect name data type (available: null|string).'], Response::HTTP_BAD_REQUEST);
-        } elseif (!is_null($accidental) && !is_string($accidental)) {
-            return $this->json(['message' => 'Incorrect accidental data type (available: null|string).'], Response::HTTP_BAD_REQUEST);
-        } elseif (!is_null($octave) && !is_int($octave)) {
-            return $this->json(['message' => 'Incorrect octave data type (available: null|int).'], Response::HTTP_BAD_REQUEST);
-        }
-        return null;
-    }
-
-    /**
-     * Validates data types of chord parameters passed in the request.
-     *
-     * @param $quality
-     * @param $inversion
-     * @return JsonResponse|null
-     */
-    private function validateChordDataTypes($quality, $inversion): ?JsonResponse
-    {
-        if (!is_null($quality) && !is_string($quality)) {
-            return $this->json(['message' => 'Incorrect quality data type (available: null|string).'], Response::HTTP_BAD_REQUEST);
-        } elseif (!is_null($inversion) && !is_int($inversion)) {
-            return $this->json(['message' => 'Incorrect inversion data type (available: null|int).'], Response::HTTP_BAD_REQUEST);
-        }
-        return null;
     }
 }
